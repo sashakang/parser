@@ -140,9 +140,9 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
     return found_items
 
 if __name__ == '__main__':
-    import os
-    print(f'{os.getcwd()=}')
-    print(f'{os.listdir()=}')
+    # import os
+    # print(f'{os.getcwd()=}')
+    # print(f'{os.listdir()=}')
     # time.sleep(60)
     
     if True:
@@ -169,20 +169,20 @@ if __name__ == '__main__':
         
         engine = get_engine(fname='.server_analytics', db='PROD_ANALYTICS')
         
-        from random import randint
-        
-    
+        # from random import randint
         # for _ in range(2):
         #     rand = randint(0, len(groups)-1)
         #     group, url = list(groups.items())[rand]
         
         for group, url in groups.items():
-            if group != 'Купола': continue
+            # if group != 'Купола': continue
             print('\n', '>'*15, 'Getting', group, '<'*15)
             found = get_group(group, url)
             
             log[group] = len(found)
             
+            print(f'\n=>  {engine=}')
+        
             found.to_sql(
                 name='parsed',
                 con=engine,

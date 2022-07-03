@@ -40,6 +40,8 @@ def get_engine(
         )
         # '?driver=SQL+Server+Native+Client+11.0'
 
+    print(f'\n=>  {engine=}')
+
     return engine
 
 
@@ -96,4 +98,3 @@ if __name__ == '__main__':
     
     send_mail('kan@dikart.ru')
     send_mail(['kan@dikart.ru', 'kan@dikart.ru'])
-    

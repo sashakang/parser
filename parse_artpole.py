@@ -5,6 +5,8 @@ merge with petergof
 write to SQL
 run on Linux
 email report
+get artpole categories from the site, not a file
+make it run both parses at once (or split to different containers?)
 '''
 
 from selenium import webdriver
@@ -46,7 +48,10 @@ def get_groups(path: str = 'список для парсинга.xlsb'):
     # driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
     # driver = webdriver.Chrome()
     options = webdriver.ChromeOptions() 
-    options.add_argument("--headless")
+    # options.add_argument("--headless")
+    options.add_argument("--no-sandbox")   # Bypass OS security model
+    options.add_argument("--disable-setuid-sandbox")
+    options.add_argument("--disable-gpu")  # applicable to windows os only
     driver = webdriver.Chrome(options=options)    
     driver.implicitly_wait(1)
     
@@ -54,6 +59,7 @@ def get_groups(path: str = 'список для парсинга.xlsb'):
     while True:
         print(f'{attempt_no=}')
         attempt_no += 1
+        time.sleep(2)
         
         try:
             driver.get('https://www.artpole.ru/catalog/lepnina.html')
@@ -101,6 +107,9 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
     
     options = webdriver.ChromeOptions() 
     options.add_argument("--headless")
+    options.add_argument("--no-sandbox")   # Bypass OS security model
+    options.add_argument("--disable-setuid-sandbox")
+    options.add_argument("--disable-gpu")  # applicable to windows os only
     driver = webdriver.Chrome(options=options)
     # driver = webdriver.Chrome()
     # driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
@@ -111,6 +120,8 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
     while True:     # TODO: limit number of retries
         print(f'{attempt_no=}')
         attempt_no += 1
+        print(f'{group=}, {group_url=}')
+        time.sleep(2)
         
         try:
             driver.get(group_url)
@@ -224,7 +235,7 @@ if __name__ == "__main__":
     
     log = {}
 
-    engine = get_engine(db='PROD_ANALYTICS')
+    engine = get_engine(fname='.server_analytics', db='PROD_ANALYTICS')
     
     for group, group_url in groups.items():
         # if not group.startswith('Розетки') : continue
@@ -232,6 +243,8 @@ if __name__ == "__main__":
         found = get_group(group, group_url)
         
         found = clean_data(found)
+
+        print(f'\n=>  {engine=}')
         
         found.to_sql(
             name='parsed',

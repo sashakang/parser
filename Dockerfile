@@ -55,9 +55,11 @@ COPY . /code/
 RUN python -m pip install -U pip
 
 
-RUN pip install -r requirements.txt
+RUN pip install -r requirements.txt 
+# --no-index --find-links file://SynologyDrive/dikart/parsing/app/venv/Lib/site-packages/
 
 COPY . .
 
 # CMD ["sh"]
+# CMD ["python", "parse_artpole.py"]
 CMD ["python", "parse_petergof.py"]
