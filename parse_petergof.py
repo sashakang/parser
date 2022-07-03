@@ -31,20 +31,16 @@ def get_groups(path: str = 'список для парсинга.xlsb'):
     
     sections = get_groups_list(filter=brand)
 
-    # options = webdriver.ChromeOptions() 
-    # options.add_argument("--headless")
-    # options.add_argument("--no-sandbox")
-    # options.add_argument("--disable-dev-shm-usage")
-    # driver = webdriver.Chrome(options=options)
-    
     # System.setProperty("webdriver.chrome.driver", "C:\\path\\to\\chromedriver.exe");
     options = webdriver.ChromeOptions() 
-    options.add_argument("start-maximized")    # open Browser in maximized mode
-    options.add_argument("disable-infobars")   # disabling infobars
-    options.add_argument("--disable-extensions")   # disabling extensions
-    options.add_argument("--disable-gpu")  # applicable to windows os only
-    options.add_argument("--disable-dev-shm-usage")    # overcome limited resource problems
+    options.add_argument("--headless")
+    # options.add_argument("start-maximized")    # open Browser in maximized mode
+    # options.add_argument("disable-infobars")   # disabling infobars
+    # options.add_argument("--disable-extensions")   # disabling extensions
+    # options.add_argument("--disable-gpu")  # applicable to windows os only
+    # options.add_argument("--disable-dev-shm-usage")    # overcome limited resource problems
     options.add_argument("--no-sandbox")   # Bypass OS security model
+    options.add_argument("--disable-setuid-sandbox")
     driver = webdriver.Chrome(options=options)
     
     driver.get('https://lepnina.ru/products/')
@@ -77,15 +73,15 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
         'url'
     ])
     
-    # options = webdriver.ChromeOptions() 
-    # options.add_argument("--headless")
     options = webdriver.ChromeOptions() 
-    options.add_argument("start-maximized")    # open Browser in maximized mode
+    options.add_argument("--headless")
+    # options.add_argument("start-maximized")    # open Browser in maximized mode
     options.add_argument("disable-infobars")   # disabling infobars
     options.add_argument("--disable-extensions")   # disabling extensions
     options.add_argument("--disable-gpu")  # applicable to windows os only
     options.add_argument("--disable-dev-shm-usage")    # overcome limited resource problems
-    options.add_argument("--no-sandbox")   # Bypass OS security model    
+    options.add_argument("--no-sandbox")   # Bypass OS security model 
+    options.add_argument("--disable-setuid-sandbox")
     driver = webdriver.Chrome(options=options)
     driver.implicitly_wait(1)
     driver.get(group_url)
@@ -171,7 +167,7 @@ if __name__ == '__main__':
             
         log = {}
         
-        engine = get_engine(db='PROD_ANALYTICS')
+        engine = get_engine(fname='.server_analytics', db='PROD_ANALYTICS')
         
         from random import randint
         
@@ -181,7 +177,7 @@ if __name__ == '__main__':
         #     group, url = list(groups.items())[rand]
         
         for group, url in groups.items():
-            # if 'тяги' not in group.lower(): continue
+            if group != 'Купола': continue
             print('\n', '>'*15, 'Getting', group, '<'*15)
             found = get_group(group, url)
             

@@ -36,8 +36,9 @@ def get_engine(
 
     engine = create_engine(
         f'mssql+pyodbc://{login}:{password}@{server}{db_str}'
-        '?driver=SQL+Server+Native+Client+11.0'
+        '?driver=ODBC Driver 17 for SQL Server'
         )
+        # '?driver=SQL+Server+Native+Client+11.0'
 
     return engine
 
