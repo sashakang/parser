@@ -48,10 +48,10 @@ def get_groups(path: str = 'список для парсинга.xlsb'):
     # driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
     # driver = webdriver.Chrome()
     options = webdriver.ChromeOptions() 
-    # options.add_argument("--headless")
+    options.add_argument("--headless")
     options.add_argument("--no-sandbox")   # Bypass OS security model
     options.add_argument("--disable-setuid-sandbox")
-    options.add_argument("--disable-gpu")  # applicable to windows os only
+    # options.add_argument("--disable-gpu")  # applicable to windows os only
     driver = webdriver.Chrome(options=options)    
     driver.implicitly_wait(1)
     
@@ -106,10 +106,10 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
     ])
     
     options = webdriver.ChromeOptions() 
-    options.add_argument("--headless")
-    options.add_argument("--no-sandbox")   # Bypass OS security model
-    options.add_argument("--disable-setuid-sandbox")
-    options.add_argument("--disable-gpu")  # applicable to windows os only
+    # options.add_argument("--headless")
+    # options.add_argument("--no-sandbox")   # Bypass OS security model
+    # options.add_argument("--disable-setuid-sandbox")
+    # options.add_argument("--disable-gpu")  # applicable to windows os only
     driver = webdriver.Chrome(options=options)
     # driver = webdriver.Chrome()
     # driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
@@ -215,10 +215,15 @@ def clean_data(df):
 if __name__ == "__main__":
     start = time.time()
 
-    print('Getting groups')
+    print(f'Getting groups from {brand}')
     groups = get_groups()
     for group, url in groups.items():
         print(f'{group}: {url}')
+        
+    import random
+    groups_list = list(groups.items())
+    random.shuffle(groups_list)
+    groups = {k: v for k, v in groups_list}
     
     result = pd.DataFrame(columns=[
         'brand',
@@ -277,4 +282,4 @@ if __name__ == "__main__":
     send_mail(recipient='kan@dikart.ru', subject=f'Parsed {brand}', message=msg)
         
     # result.to_excel('found_items.xlsx', sheet_name='Артполе', index=False)
-    
+   

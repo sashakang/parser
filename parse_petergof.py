@@ -145,8 +145,10 @@ if __name__ == '__main__':
     # print(f'{os.listdir()=}')
     # time.sleep(60)
     
+    start = time.time()
+    print(f'Getting groups from {brand}')
+    
     if True:
-        start = time.time()
         
         groups = get_groups()
         for k, v in groups.items():
@@ -169,10 +171,10 @@ if __name__ == '__main__':
         
         engine = get_engine(fname='.server_analytics', db='PROD_ANALYTICS')
         
-        # from random import randint
-        # for _ in range(2):
-        #     rand = randint(0, len(groups)-1)
-        #     group, url = list(groups.items())[rand]
+        import random
+        groups_list = list(groups.items())
+        random.shuffle(groups_list)
+        groups = {k: v for k, v in groups_list}
         
         for group, url in groups.items():
             # if group != 'Купола': continue
