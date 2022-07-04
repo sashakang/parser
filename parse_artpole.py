@@ -23,27 +23,8 @@ from services import get_engine, send_mail, get_webdriver
 brand = 'Артполе'
 
 
-def get_groups_list(
-    path: str = 'список для парсинга.xlsb',
-    filter: str = 'Артполе'
-) -> list:
-    # path = r'\\ps06\150\список для парсинга.xlsb'
-    # path = 'список для парсинга.xlsb'
-    sections = pd.read_excel(
-        path,
-        sheet_name='разделы',
-        header=0
-    )
-    sections = sections[sections.Компания==filter]
-    sections = sections.Раздел.to_list()
-    
-    return sections
-    
-
 def get_groups(path: str = 'список для парсинга.xlsb'):
     
-    sections = get_groups_list()
-
     # driver = webdriver.Chrome(r'C:\Program Files\Google\Chrome Beta\Application\chrome.exe')
     # driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
     # driver = webdriver.Chrome()
@@ -78,8 +59,7 @@ def get_groups(path: str = 'список для парсинга.xlsb'):
         
                 link = group.find_element(By.TAG_NAME, "a").get_attribute('href')
                 
-                if text in sections:
-                    groups[text] = link
+                groups[text] = link
                 
             break
         
