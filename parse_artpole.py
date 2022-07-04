@@ -17,7 +17,7 @@ import re
 import time
 from datetime import datetime as dt
 import sqlalchemy
-from services import get_engine, send_mail
+from services import get_engine, send_mail, get_webdriver
 
 
 brand = 'Артполе'
@@ -47,18 +47,20 @@ def get_groups(path: str = 'список для парсинга.xlsb'):
     # driver = webdriver.Chrome(r'C:\Program Files\Google\Chrome Beta\Application\chrome.exe')
     # driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
     # driver = webdriver.Chrome()
-    options = webdriver.ChromeOptions() 
-    options.add_argument("--headless")
-    options.add_argument("--no-sandbox")   # Bypass OS security model
-    options.add_argument("--disable-setuid-sandbox")
-    # options.add_argument("--disable-gpu")  # applicable to windows os only
-    driver = webdriver.Chrome(options=options)    
-    driver.implicitly_wait(1)
+    # options = webdriver.ChromeOptions() 
+    # options.add_argument("--headless")
+    # options.add_argument("--no-sandbox")   # Bypass OS security model
+    # options.add_argument("--disable-setuid-sandbox")
+    # # options.add_argument("--disable-gpu")  # applicable to windows os only
+    # driver = webdriver.Chrome(options=options)    
+    # driver.implicitly_wait(1)
+    
     
     attempt_no = 0
     while True:
         print(f'{attempt_no=}')
         attempt_no += 1
+        driver = get_webdriver()
         time.sleep(2)
         
         try:
@@ -105,15 +107,15 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
         'url'
     ])
     
-    options = webdriver.ChromeOptions() 
-    options.add_argument("--headless")
-    options.add_argument("--no-sandbox")   # Bypass OS security model
-    options.add_argument("--disable-setuid-sandbox")
-    # options.add_argument("--disable-gpu")  # applicable to windows os only
-    driver = webdriver.Chrome(options=options)
-    # driver = webdriver.Chrome()
-    # driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-    driver.implicitly_wait(2)   # TODO: move to upper level?
+    # options = webdriver.ChromeOptions() 
+    # options.add_argument("--headless")
+    # options.add_argument("--no-sandbox")   # Bypass OS security model
+    # options.add_argument("--disable-setuid-sandbox")
+    # # options.add_argument("--disable-gpu")  # applicable to windows os only
+    # driver = webdriver.Chrome(options=options)
+    # # driver = webdriver.Chrome()
+    # # driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+    # driver.implicitly_wait(2)   # TODO: move to upper level?
     
     attempt_no = 0
     
@@ -121,6 +123,9 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
         print(f'{attempt_no=}')
         attempt_no += 1
         print(f'{group=}, {group_url=}')
+        
+        driver = get_webdriver()
+        
         time.sleep(2)
         
         try:

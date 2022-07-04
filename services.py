@@ -3,6 +3,7 @@
 from typing import Union
 from sqlalchemy import create_engine, engine
 import smtplib, ssl
+from selenium import webdriver
 
 
 def get_engine(
@@ -90,6 +91,21 @@ def send_mail(
         
     print(f'Sent mail to {recipient}')
 
+
+def get_webdriver() -> webdriver:
+    # driver = webdriver.Chrome(r'C:\Program Files\Google\Chrome Beta\Application\chrome.exe')
+    # driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+    # driver = webdriver.Chrome()
+    options = webdriver.ChromeOptions() 
+    options.add_argument("--headless")
+    options.add_argument("--no-sandbox")   # Bypass OS security model
+    options.add_argument("--disable-setuid-sandbox")
+    # options.add_argument("--disable-gpu")  # applicable to windows os only
+    driver = webdriver.Chrome(options=options)    
+    driver.implicitly_wait(1)
+    
+    return driver    
+    
 
 if __name__ == '__main__':
     eng = get_engine()
