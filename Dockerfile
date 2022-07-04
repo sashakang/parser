@@ -61,5 +61,6 @@ RUN pip install -r requirements.txt
 COPY . .
 
 # CMD ["sh"]
+ENTRYPOINT [  ]
 CMD ["python", "parse_artpole.py"]
 # CMD ["python", "parse_petergof.py"]

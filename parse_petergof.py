@@ -198,7 +198,7 @@ if __name__ == '__main__':
                 }
             )
             
-            result = pd.concat([result, found], ignore_index=True)
+            # result = pd.concat([result, found], ignore_index=True)
 
         msg = f'***PARSED {brand}***\n'
         print('*' * 15, 'PARSED', brand, '*' * 16)
