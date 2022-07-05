@@ -176,7 +176,7 @@ if __name__ == '__main__':
             found.to_sql(
                 name='parsed',
                 con=engine,
-                if_exists='replace',
+                if_exists='append',
                 index=False,
                 dtype={
                     'timestamp': sqlalchemy.DateTime,
