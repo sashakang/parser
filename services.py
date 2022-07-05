@@ -39,7 +39,6 @@ def get_engine(
         f'mssql+pyodbc://{login}:{password}@{server}{db_str}'
         '?driver=ODBC Driver 17 for SQL Server'
         )
-        # '?driver=SQL+Server+Native+Client+11.0'
 
     print(f'\n=>  {engine=}')
 
@@ -92,7 +91,7 @@ def send_mail(
     print(f'Sent mail to {recipient}')
 
 
-def get_webdriver() -> webdriver:
+def get_webdriver():
     # driver = webdriver.Chrome(r'C:\Program Files\Google\Chrome Beta\Application\chrome.exe')
     # driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
     # driver = webdriver.Chrome()
@@ -100,7 +99,16 @@ def get_webdriver() -> webdriver:
     # options.add_argument("--headless")
     options.add_argument("--no-sandbox")   # Bypass OS security model
     options.add_argument("--disable-setuid-sandbox")
-    # options.add_argument("--disable-gpu")  # applicable to windows os only
+    options.add_argument("--disable-gpu")  # applicable to windows os only
+    
+    '''
+        INFO = 0, 
+        WARNING = 1, 
+        LOG_ERROR = 2, 
+        LOG_FATAL = 3.
+    '''
+    options.add_argument('log-level=1')
+    
     driver = webdriver.Chrome(options=options)    
     driver.implicitly_wait(1)
     

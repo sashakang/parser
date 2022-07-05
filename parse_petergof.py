@@ -6,6 +6,7 @@
 from selenium import webdriver
 # from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import WebDriverException
 import pandas as pd
 import numpy as np
 # import re
@@ -27,18 +28,6 @@ brand = 'Петергоф'
             
 
 def get_groups(path: str = 'список для парсинга.xlsb'):
-    
-    # System.setProperty("webdriver.chrome.driver", "C:\\path\\to\\chromedriver.exe");
-    # options = webdriver.ChromeOptions() 
-    # options.add_argument("--headless")
-    # # options.add_argument("start-maximized")    # open Browser in maximized mode
-    # # options.add_argument("disable-infobars")   # disabling infobars
-    # # options.add_argument("--disable-extensions")   # disabling extensions
-    # # options.add_argument("--disable-gpu")  # applicable to windows os only
-    # # options.add_argument("--disable-dev-shm-usage")    # overcome limited resource problems
-    # options.add_argument("--no-sandbox")   # Bypass OS security model
-    # options.add_argument("--disable-setuid-sandbox")
-    # driver = webdriver.Chrome(options=options)
     
     driver = get_webdriver()
     driver.get('https://lepnina.ru/products/')
@@ -69,24 +58,21 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
         'dimensions',
         'url'
     ])
-    
-    # options = webdriver.ChromeOptions() 
-    # options.add_argument("--headless")
-    # # options.add_argument("start-maximized")    # open Browser in maximized mode
-    # options.add_argument("disable-infobars")   # disabling infobars
-    # options.add_argument("--disable-extensions")   # disabling extensions
-    # options.add_argument("--disable-gpu")  # applicable to windows os only
-    # options.add_argument("--disable-dev-shm-usage")    # overcome limited resource problems
-    # options.add_argument("--no-sandbox")   # Bypass OS security model 
-    # options.add_argument("--disable-setuid-sandbox")
-    # driver = webdriver.Chrome(options=options)
-    # driver.implicitly_wait(1)
 
-    driver = get_webdriver()
-    driver.get(group_url)
-    timestamp = dt.now().strftime('%Y-%m-%d %H:%M:%S')
+    timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(time.time()))
+    
+    for _ in range(20):
+        try:
+            driver = get_webdriver()
+            driver.get(group_url)
+            break
+        except WebDriverException as e:
+            print(e)
+            driver.quit()
+            time.sleep(2)
 
     items = driver.find_elements(By.CLASS_NAME, 'card')
+    # driver.quit()
     
     for item in items:
         name = params = material = id = list_price = url = None
@@ -135,6 +121,9 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
         })
 
         found_items.loc[len(found_items)] = new_record
+    
+    print(f'\nGot {len(found_items)} items from {group}')
+    print(f'{timestamp}')
         
     return found_items
 
@@ -169,7 +158,7 @@ if __name__ == '__main__':
         log = {}
         
         engine = get_engine(fname='.server_analytics', db='PROD_ANALYTICS')
-        
+
         import random
         groups_list = list(groups.items())
         random.shuffle(groups_list)
@@ -183,11 +172,11 @@ if __name__ == '__main__':
             log[group] = len(found)
             
             print(f'\n=>  {engine=}')
-        
+
             found.to_sql(
                 name='parsed',
                 con=engine,
-                if_exists='append',
+                if_exists='replace',
                 index=False,
                 dtype={
                     'timestamp': sqlalchemy.DateTime,
@@ -214,5 +203,4 @@ if __name__ == '__main__':
         print(f'Completed in {elapsed_str} seconds.')
         
         # writer = pd.ExcelWriter('found_items.xlsx', engine = 'openpyxl')
-        # result.to_excel(writer, sheet_name=brand, index=False)
-        # writer.
+        # result.to_excel(writer, sheet_name=brand,
