@@ -1,11 +1,7 @@
 '''
 TODO:
-move to docker
-merge with petergof
-write to SQL
-run on Linux
-email report
-make it run both parses at once (or split to different containers?)
+refactor
+remove credentials
 '''
 
 # from selenium import webdriver
