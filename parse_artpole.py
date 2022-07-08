@@ -5,13 +5,11 @@ remove credentials
 chk error msgs in the output
 '''
 
-# from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 import pandas as pd
 import re
 import time
-# from datetime import datetime as dt
 import sqlalchemy
 from services import get_engine, send_mail, get_webdriver
 
@@ -20,7 +18,7 @@ brand = 'Артполе'
 
 
 def get_groups():
-    driver = get_webdriver()
+    # driver = get_webdriver()
     driver.get('https://www.artpole.ru/catalog/lepnina.html')
     found = driver.find_elements(By.CLASS_NAME, "preview-new-td")
     
@@ -49,86 +47,69 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
         'url'
     ])
     
-    attempt_no = 0
+    driver.get(group_url)
+
+    timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(time.time()))
     
-    while True:     # TODO: limit number of retries
-        print(f'{attempt_no=}')
-        attempt_no += 1
-        print(f'{group=}, {group_url=}')
+    items = driver.find_elements(By.CLASS_NAME, 'sostav-coll')
+    if len(items) == 0:
+        items = driver.find_elements(By.CLASS_NAME, 'preview-new-td')
+
+    for item in items:
+        name = params = material = id = dimensions = url = None
+        list_price = sale_price = discount = 0
+        try:
+            name = item.find_element(By.CLASS_NAME, 'sostav-item-name').text
+        except NoSuchElementException:
+            name = item.find_element(By.CLASS_NAME, 'img-cat-lvl1').get_attribute('title')
+            
+        params = item.find_elements(By.CLASS_NAME, 'sostav-item-artikul-wr')
+        
+        for attr in params:
+            txt = attr.text
+            if "Материал" in txt:
+                material = txt
+            elif "Артикул" in txt:
+                id = txt
         
         try:
-            driver = get_webdriver()
-            time.sleep(2)
-            driver.get(group_url)
+            dimensions = item.find_element(By.CLASS_NAME, 'sostav-item-color-wr').text
+        except NoSuchElementException:
+            pass
+            
+        try:
+            list_price = item.find_element(By.CLASS_NAME, 'pp2').text
+        except NoSuchElementException:
+            for val in item.find_elements(By.CLASS_NAME, 'pp'):
+                txt = val.text
+                if 'Старая цена: ' in txt:
+                    list_price = txt
+                elif 'Новая цена: ' in txt:
+                    sale_price = txt
+                elif 'Скидка: ' in txt:
+                    discount = txt
+            
+        url = item.find_element(By.TAG_NAME, 'a').get_attribute('href')
+        print(f'{name=}, {id=}, {material=}, {dimensions=}, {list_price=}, {url=}')
+        new_record = pd.Series({
+            'brand': brand,
+            'timestamp': timestamp,
+            'cat': group,
+            'name': name,
+            'list_price': list_price,
+            'discount': discount,
+            'sale_price': sale_price,
+            'id': id,
+            'dimensions': dimensions,
+            'url': url
+        })
 
-            timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(time.time()))
-            time.sleep(1)
+        found_items.loc[len(found_items)] = new_record
             
-            items = driver.find_elements(By.CLASS_NAME, 'sostav-coll')
-            if len(items) == 0:
-                items = driver.find_elements(By.CLASS_NAME, 'preview-new-td')
-        
-            for item in items:
-                name = params = material = id = dimensions = url = None
-                list_price = sale_price = discount = 0
-                try:
-                    name = item.find_element(By.CLASS_NAME, 'sostav-item-name').text
-                except NoSuchElementException:
-                    name = item.find_element(By.CLASS_NAME, 'img-cat-lvl1').get_attribute('title')
-                    
-                params = item.find_elements(By.CLASS_NAME, 'sostav-item-artikul-wr')
-                
-                for attr in params:
-                    txt = attr.text
-                    if "Материал" in txt:
-                        material = txt
-                    elif "Артикул" in txt:
-                        id = txt
-                
-                try:
-                    dimensions = item.find_element(By.CLASS_NAME, 'sostav-item-color-wr').text
-                except NoSuchElementException:
-                    pass
-                    
-                try:
-                    list_price = item.find_element(By.CLASS_NAME, 'pp2').text
-                except NoSuchElementException:
-                    for val in item.find_elements(By.CLASS_NAME, 'pp'):
-                        txt = val.text
-                        if 'Старая цена: ' in txt:
-                            list_price = txt
-                        elif 'Новая цена: ' in txt:
-                            sale_price = txt
-                        elif 'Скидка: ' in txt:
-                            discount = txt
-                    
-                url = item.find_element(By.TAG_NAME, 'a').get_attribute('href')
-                print(f'{name=}, {id=}, {material=}, {dimensions=}, {list_price=}, {url=}')
-                new_record = pd.Series({
-                    'brand': brand,
-                    'timestamp': timestamp,
-                    'cat': group,
-                    'name': name,
-                    'list_price': list_price,
-                    'discount': discount,
-                    'sale_price': sale_price,
-                    'id': id,
-                    'dimensions': dimensions,
-                    'url': url
-                })
-
-                found_items.loc[len(found_items)] = new_record
-                
-            driver.quit()    
-            
-            print(f'\nGot {len(found_items)} items from {group} in {attempt_no} attempts')
-            print(f'{timestamp}')
-            
-            return found_items
+    print(f'\nGot {len(found_items)} items from {group}')
+    print(f'{timestamp}')
     
-        except Exception as e: 
-            print(f'{e=}')
-            driver.quit()
+    return found_items
 
 
 def clean_data(df):
@@ -155,6 +136,8 @@ if __name__ == "__main__":
     start = time.time()
 
     print(f'Getting groups from {brand}')
+    
+    driver = get_webdriver()
     groups = get_groups()
     for group, url in groups.items():
         print(f'{group}: {url}')
@@ -182,7 +165,7 @@ if __name__ == "__main__":
     engine = get_engine(fname='.server_analytics')
     
     for group, group_url in groups.items():
-        # if not group.startswith('Розетки') : continue
+        # if group != 'Карнизы гладкие' : continue
         print('\n', '>'*20, 'Getting', group, '<'*20)
         found = get_group(group, group_url)
         

@@ -92,9 +92,6 @@ def send_mail(
 
 
 def get_webdriver():
-    # driver = webdriver.Chrome(r'C:\Program Files\Google\Chrome Beta\Application\chrome.exe')
-    # driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-    # driver = webdriver.Chrome()
     options = webdriver.ChromeOptions() 
     options.add_argument("--disable-extensions")
     options.add_argument("--headless")
@@ -111,7 +108,7 @@ def get_webdriver():
     options.add_argument('log-level=1')
     
     driver = webdriver.Chrome(options=options)    
-    driver.implicitly_wait(1)
+    driver.implicitly_wait(5)
     
     return driver    
     
