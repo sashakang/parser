@@ -2,6 +2,7 @@
 TODO:
 refactor
 remove credentials
+chk error msgs in the output
 '''
 
 # from selenium import webdriver
@@ -18,39 +19,17 @@ from services import get_engine, send_mail, get_webdriver
 brand = 'Артполе'
 
 
-def get_groups(path: str = 'список для парсинга.xlsb'):
+def get_groups():
+    driver = get_webdriver()
+    driver.get('https://www.artpole.ru/catalog/lepnina.html')
+    found = driver.find_elements(By.CLASS_NAME, "preview-new-td")
     
-    attempt_no = 0
-    while True:
-        print(f'{attempt_no=}')
-        attempt_no += 1
-        driver = get_webdriver()
-        time.sleep(2)
-        
-        try:
-            driver.get('https://www.artpole.ru/catalog/lepnina.html')
-            
-            time.sleep(1)
-            
-            found = driver.find_elements(By.CLASS_NAME, "preview-new-td")
-            
-            groups = {}
+    groups = {}
 
-            for group in found:
-                text = group.text.split('\n')[0]
-                # print(text, sep='\n')
-        
-                link = group.find_element(By.TAG_NAME, "a").get_attribute('href')
-                
-                groups[text] = link
-                
-            break
-        
-        except Exception as e:
-            print(e)
-        # print(link)
-    
-    driver.quit()
+    for group in found:
+        text = group.text.split('\n')[0]
+        link = group.find_element(By.TAG_NAME, "a").get_attribute('href')
+        groups[text] = link
         
     return groups
 
