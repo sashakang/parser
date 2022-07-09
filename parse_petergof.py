@@ -1,20 +1,9 @@
-# from operator import index
-# from os import times
-# from this import d
-# from unicodedata import name
-# from webbrowser import get
-from selenium import webdriver
-# from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import WebDriverException
 import pandas as pd
 import numpy as np
-# import re
-# import openpyxl
 import time
-
 import sqlalchemy
-# import pyodbc
 from services import get_engine, send_mail, get_webdriver
 from datetime import datetime as dt
 from datetime import timedelta
@@ -29,7 +18,7 @@ brand = 'Петергоф'
 
 def get_groups(path: str = 'список для парсинга.xlsb'):
     
-    driver = get_webdriver()
+    # driver = get_webdriver()
     driver.get('https://lepnina.ru/products/')
     
     found = driver.find_elements(By.CLASS_NAME, "card")
@@ -128,13 +117,11 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
     return found_items
 
 if __name__ == '__main__':
-    # import os
-    # print(f'{os.getcwd()=}')
-    # print(f'{os.listdir()=}')
-    # time.sleep(60)
     
     start = time.time()
     print(f'Getting groups from {brand}')
+    
+    driver = get_webdriver()
     
     if True:
         
@@ -186,8 +173,6 @@ if __name__ == '__main__':
                 }
             )
             
-            # result = pd.concat([result, found], ignore_index=True)
-
         msg = f'***PARSED {brand}***\n'
         print('*' * 15, 'PARSED', brand, '*' * 16)
         for group, count in log.items():
@@ -202,5 +187,3 @@ if __name__ == '__main__':
         elapsed_str = time.strftime('%H:%M:%S', time.gmtime(elapsed_time))
         print(f'Completed in {elapsed_str} seconds.')
         
-        # writer = pd.ExcelWriter('found_items.xlsx', engine = 'openpyxl')
-        # result.to_excel(writer, sheet_name=brand,

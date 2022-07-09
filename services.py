@@ -108,7 +108,7 @@ def get_webdriver():
     options.add_argument('log-level=1')
     
     driver = webdriver.Chrome(options=options)    
-    driver.implicitly_wait(5)
+    driver.implicitly_wait(4)
     
     return driver    
     

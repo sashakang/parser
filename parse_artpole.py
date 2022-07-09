@@ -137,6 +137,7 @@ def clean_data(df):
     
 
 if __name__ == "__main__":
+    print('Starting v.0.2')
     start = time.time()
 
     print(f'Getting groups from {brand}')
