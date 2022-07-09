@@ -3,8 +3,12 @@ TODO:
 refactor
 remove credentials
 chk error msgs in the output
+regex the dimensions or the entire item data string
+use ML to process data string
+automatically find matches using images and descriptions
 '''
 
+from sqlite3 import Timestamp
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 import pandas as pd
@@ -137,7 +141,9 @@ if __name__ == "__main__":
 
     print(f'Getting groups from {brand}')
     
+    engine = get_engine(fname='.server_analytics')
     driver = get_webdriver()
+    
     groups = get_groups()
     for group, url in groups.items():
         print(f'{group}: {url}')
@@ -162,8 +168,6 @@ if __name__ == "__main__":
     
     log = {}
 
-    engine = get_engine(fname='.server_analytics')
-    
     for group, group_url in groups.items():
         # if group != 'Карнизы гладкие' : continue
         print('\n', '>'*20, 'Getting', group, '<'*20)
@@ -190,6 +194,7 @@ if __name__ == "__main__":
         log[group] = len(found)
         result = pd.concat([result, found], ignore_index=True)
         
+    # print result
     msg = f'***PARSED {brand}***\n'
     print('*' * 15, 'PARSED', brand, '*' * 16)
     for group, count in log.items():
@@ -200,8 +205,7 @@ if __name__ == "__main__":
     
     elapsed_time = time.time() - start
     elapsed_str = time.strftime('%H:%M:%S', time.gmtime(elapsed_time))
-    print(f'Completed in {elapsed_str} seconds.')
+    timestamp = time.strftime('%d.%m.%y %H:%M:%S', time.gmtime(time.time())) 
+    print(f'Completed at {timestamp}GMT in {elapsed_str} seconds.')
  
     send_mail(recipient='kan@dikart.ru', subject=f'Parsed {brand}', message=msg)
-        
-    # result.to_excel('found_items.xlsx', sheet_name='Артполе', 
