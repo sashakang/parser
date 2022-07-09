@@ -1,6 +1,5 @@
 '''
 TODO:
-refactor
 remove credentials
 chk error msgs in the output
 regex the dimensions or the entire item data string
@@ -9,7 +8,6 @@ automatically find matches using images and descriptions
 detect 'NEW' labels
 '''
 
-from sqlite3 import Timestamp
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 import pandas as pd
@@ -23,7 +21,6 @@ brand = 'Артполе'
 
 
 def get_groups():
-    # driver = get_webdriver()
     driver.get('https://www.artpole.ru/catalog/lepnina.html')
     found = driver.find_elements(By.CLASS_NAME, "preview-new-td")
     
@@ -211,3 +208,4 @@ if __name__ == "__main__":
     print(f'Completed at {timestamp}UTC in {elapsed_str} seconds.')
  
     send_mail(recipient='kan@dikart.ru', subject=f'Parsed {brand}', message=msg)
+    

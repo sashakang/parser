@@ -1,13 +1,9 @@
 from selenium.webdriver.common.by import By
-# from selenium.common.exceptions import WebDriverException
 import pandas as pd
 import numpy as np
 import time
 import sqlalchemy
 from services import get_engine, send_mail, get_webdriver
-# from datetime import datetime as dt
-# from datetime import timedelta
-
 from decimal import *
 setcontext(BasicContext)
 D = Decimal
@@ -173,4 +169,3 @@ if __name__ == '__main__':
     elapsed_str = time.strftime('%H:%M:%S', time.gmtime(elapsed_time))
     timestamp = time.strftime('%d.%m.%y %H:%M:%S', time.gmtime(time.time())) 
     print(f'Completed at {timestamp}UTC in {elapsed_str} seconds.')
-        
