@@ -6,6 +6,7 @@ chk error msgs in the output
 regex the dimensions or the entire item data string
 use ML to process data string
 automatically find matches using images and descriptions
+detect 'NEW' labels
 '''
 
 from sqlite3 import Timestamp
@@ -207,6 +208,6 @@ if __name__ == "__main__":
     elapsed_time = time.time() - start
     elapsed_str = time.strftime('%H:%M:%S', time.gmtime(elapsed_time))
     timestamp = time.strftime('%d.%m.%y %H:%M:%S', time.gmtime(time.time())) 
-    print(f'Completed at {timestamp}GMT in {elapsed_str} seconds.')
+    print(f'Completed at {timestamp}UTC in {elapsed_str} seconds.')
  
     send_mail(recipient='kan@dikart.ru', subject=f'Parsed {brand}', message=msg)

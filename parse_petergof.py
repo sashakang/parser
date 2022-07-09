@@ -1,24 +1,22 @@
 from selenium.webdriver.common.by import By
-from selenium.common.exceptions import WebDriverException
+# from selenium.common.exceptions import WebDriverException
 import pandas as pd
 import numpy as np
 import time
 import sqlalchemy
 from services import get_engine, send_mail, get_webdriver
-from datetime import datetime as dt
-from datetime import timedelta
+# from datetime import datetime as dt
+# from datetime import timedelta
 
 from decimal import *
 setcontext(BasicContext)
 D = Decimal
 
-expiration_period = timedelta(minutes=1)
 brand = 'Петергоф'
             
 
 def get_groups(path: str = 'список для парсинга.xlsb'):
     
-    # driver = get_webdriver()
     driver.get('https://lepnina.ru/products/')
     
     found = driver.find_elements(By.CLASS_NAME, "card")
@@ -50,18 +48,8 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
 
     timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(time.time()))
     
-    for _ in range(20):
-        try:
-            driver = get_webdriver()
-            driver.get(group_url)
-            break
-        except WebDriverException as e:
-            print(e)
-            driver.quit()
-            time.sleep(2)
-
+    driver.get(group_url)
     items = driver.find_elements(By.CLASS_NAME, 'card')
-    # driver.quit()
     
     for item in items:
         name = params = material = id = list_price = url = None
@@ -122,68 +110,67 @@ if __name__ == '__main__':
     print(f'Getting groups from {brand}')
     
     driver = get_webdriver()
+    engine = get_engine(fname='.server_analytics', db='PROD_ANALYTICS')
     
-    if True:
+    groups = get_groups()
+    for k, v in groups.items():
+        print(k, v)
         
-        groups = get_groups()
-        for k, v in groups.items():
-            print(k, v)
-            
-        result = pd.DataFrame(columns=[
-            'brand', 
-            'timestamp',
-            'cat',
-            'name',
-            'list_price',
-            'discount',
-            'sale_price',
-            'id',
-            'dimensions',
-            'url'
-        ])
-            
-        log = {}
+    result = pd.DataFrame(columns=[
+        'brand', 
+        'timestamp',
+        'cat',
+        'name',
+        'list_price',
+        'discount',
+        'sale_price',
+        'id',
+        'dimensions',
+        'url'
+    ])
         
-        engine = get_engine(fname='.server_analytics', db='PROD_ANALYTICS')
+    log = {}
 
-        import random
-        groups_list = list(groups.items())
-        random.shuffle(groups_list)
-        groups = {k: v for k, v in groups_list}
+    import random
+    groups_list = list(groups.items())
+    random.shuffle(groups_list)
+    groups = {k: v for k, v in groups_list}
+    
+    for group, url in groups.items():
+        # if group != 'Купола': continue
+        print('\n', '>'*15, 'Getting', group, '<'*15)
+        found = get_group(group, url)
         
-        for group, url in groups.items():
-            # if group != 'Купола': continue
-            print('\n', '>'*15, 'Getting', group, '<'*15)
-            found = get_group(group, url)
-            
-            log[group] = len(found)
-            
-            print(f'\n=>  {engine=}')
+        log[group] = len(found)
+        
+        print(f'\n=>  {engine=}')
 
-            found.to_sql(
-                name='parsed',
-                con=engine,
-                if_exists='append',
-                index=False,
-                dtype={
-                    'timestamp': sqlalchemy.DateTime,
-                    'list_price': sqlalchemy.Numeric,
-                    'discount': sqlalchemy.Float,
-                    'sale_price': sqlalchemy.Numeric
-                }
-            )
-            
-        msg = f'***PARSED {brand}***\n'
-        print('*' * 15, 'PARSED', brand, '*' * 16)
-        for group, count in log.items():
-            print(f'{group}: {count}')
-            msg += f'{group}: {count}\n'
-        print('*' * 40)
-        msg += '***END***'
+        found.to_sql(
+            name='parsed',
+            con=engine,
+            if_exists='append',
+            index=False,
+            dtype={
+                'timestamp': sqlalchemy.DateTime,
+                'list_price': sqlalchemy.Numeric,
+                'discount': sqlalchemy.Float,
+                'sale_price': sqlalchemy.Numeric
+            }
+        )
         
-        send_mail(recipient='kan@dikart.ru', subject=f'Parsed {brand}', message=msg)
-        
-        elapsed_time = time.time() - start
-        elapsed_str = time.strftime('%H:%M:%S', time.gmtime(elapsed_time))
-        print(f'Completed in {elapsed_str} seconds.')
+    # print result
+    msg = f'***PARSED {brand}***\n'
+    print('*' * 15, 'PARSED', brand, '*' * 16)
+    for group, count in log.items():
+        print(f'{group}: {count}')
+        msg += f'{group}: {count}\n'
+    print('*' * 40)
+    msg += '***END***'
+    
+    send_mail(recipient='kan@dikart.ru', subject=f'Parsed {brand}', message=msg)
+    
+    elapsed_time = time.time() - start
+    elapsed_str = time.strftime('%H:%M:%S', time.gmtime(elapsed_time))
+    timestamp = time.strftime('%d.%m.%y %H:%M:%S', time.gmtime(time.time())) 
+    print(f'Completed at {timestamp}UTC in {elapsed_str} seconds.')
         
