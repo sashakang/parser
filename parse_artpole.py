@@ -1,14 +1,12 @@
 '''
 TODO:
-detect 'NEW' labels
 replace try-except with len(find_elements)
 chk error msgs in the output
 regex the dimensions or the entire item data string
-use ML to process data string
+use ML to process data string?
 automatically find matches using images and descriptions
 '''
 
-from hashlib import new
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 import pandas as pd
