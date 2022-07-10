@@ -32,6 +32,7 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
     found_items = pd.DataFrame(columns=[
         'brand',
         'timestamp',
+        'new',
         'cat',
         'name',
         'list_price',
@@ -53,6 +54,12 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
         dimensions = ''
         
         name = item.find_element(By.CLASS_NAME, 'card__name').text.strip()
+        
+        if len(item.find_elements(By.CLASS_NAME, 'card_new_icon')) > 0:
+            new = 1
+        else:
+            new = 0
+            
         
         params = item.find_element(By.CLASS_NAME, 'params-item')
         rows = params.find_elements(By.TAG_NAME, 'tr')
@@ -83,6 +90,7 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
         new_record = pd.Series({
             'brand': brand,
             'timestamp': timestamp,
+            'new': new,
             'cat': group,
             'name': name,
             'list_price': list_price,
@@ -115,6 +123,7 @@ if __name__ == '__main__':
     result = pd.DataFrame(columns=[
         'brand', 
         'timestamp',
+        'new',
         'cat',
         'name',
         'list_price',
@@ -133,7 +142,7 @@ if __name__ == '__main__':
     groups = {k: v for k, v in groups_list}
     
     for group, url in groups.items():
-        # if group != 'Купола': continue
+        # if group != 'Розетки': continue
         print('\n', '>'*15, 'Getting', group, '<'*15)
         found = get_group(group, url)
         

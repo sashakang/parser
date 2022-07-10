@@ -1,10 +1,10 @@
 '''
 TODO:
+detect 'NEW' labels
 chk error msgs in the output
 regex the dimensions or the entire item data string
 use ML to process data string
 automatically find matches using images and descriptions
-detect 'NEW' labels
 '''
 
 from selenium.common.exceptions import NoSuchElementException

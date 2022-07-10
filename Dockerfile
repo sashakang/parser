@@ -13,9 +13,6 @@ RUN apt-get install -yqq unzip
 RUN wget -O /tmp/chromedriver.zip http://chromedriver.storage.googleapis.com/`curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE`/chromedriver_linux64.zip
 RUN unzip /tmp/chromedriver.zip chromedriver -d /usr/local/bin/
 
-
-# RUN apt -y install curl
-# RUN apt -y install gnupg2
 # # INSTALL MSSQL ODBC DRIVERS
 RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
 RUN curl https://packages.microsoft.com/config/debian/9/prod.list > /etc/apt/sources.list.d/mssql-release.list
@@ -28,18 +25,6 @@ RUN apt-get -y update
 RUN apt-get install -y unixodbc-dev
 RUN apt-get -y update
 RUN ACCEPT_EULA=Y apt-get -y --no-install-recommends install msodbcsql17
-
-# install pyodbc separately
-# RUN apt-get update && apt-get install -y \
-#     --no-install-recommends \
-#     unixodbc-dev \
-#     unixodbc \
-#     libpq-dev 
-
-# COPY requirements.txt requirements.txt
-
-# set display port to avoid crash
-# ENV DISPLAY=:99
 
 RUN mkdir /code
 WORKDIR /code
