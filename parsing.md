@@ -16,3 +16,13 @@ To schedule a job need root privileges for cron:
 To run container in cron do not use `-it` option, i.e.  
 `docker run --shm-size=1g --rm parser python parse_petergof.py`
 
+To keep credentials use volume mount. Do not use bind mount as its path can be modified and thus the code can get access to any data.
+
+To create volume:  
+`sudo docker volume create uduntu-dsk`
+
+The local folder containing the data is:  
+`/var/lib/docker/volums/[disk name]/_data/`
+
+To bind volume:  
+`sudo docker run -v uduntu-dsk:/path/to/folder [image_name]`
