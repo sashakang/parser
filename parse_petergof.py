@@ -106,7 +106,7 @@ if __name__ == '__main__':
     print(f'Getting groups from {brand}')
     
     driver = get_webdriver()
-    engine = get_engine(fname='.server_analytics', db='PROD_ANALYTICS')
+    engine = get_engine(fname='../credentials/.server_analytics')
     
     groups = get_groups()
     for k, v in groups.items():

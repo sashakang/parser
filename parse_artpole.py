@@ -1,6 +1,5 @@
 '''
 TODO:
-remove credentials
 chk error msgs in the output
 regex the dimensions or the entire item data string
 use ML to process data string
@@ -140,7 +139,7 @@ if __name__ == "__main__":
 
     print(f'Getting groups from {brand}')
     
-    engine = get_engine(fname='.server_analytics')
+    engine = get_engine(fname='../credentials/.server_analytics')
     driver = get_webdriver()
     
     groups = get_groups()
