@@ -1,6 +1,7 @@
 '''
 TODO:
 replace try-except with len(find_elements)
+detect 'new' label in Artpole product images
 chk error msgs in the output
 regex the dimensions or the entire item data string
 use ML to process data string?
@@ -179,7 +180,7 @@ if __name__ == "__main__":
     log = {}
 
     for group, group_url in groups.items():
-        # if group != 'Карнизы гладкие' : continue
+        if group != 'Карнизы гладкие' : continue
         print('\n', '>'*20, 'Getting', group, '<'*20)
         found = get_group(group, group_url)
         
@@ -194,7 +195,7 @@ if __name__ == "__main__":
             index=False,
             dtype={
                 'timestamp': sqlalchemy.DateTime,
-                'new': sqlalchemy.BINARY,
+                # 'new': sqlalchemy.BINARY,
                 'list_price': sqlalchemy.Numeric,
                 'discount': sqlalchemy.Float,
                 'sale_price': sqlalchemy.Numeric
