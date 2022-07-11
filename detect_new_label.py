@@ -16,6 +16,9 @@ def is_new(
     Args:
         filepath (os.path, optional). Defaults to None.
         img_url (str, optional). Defaults to None.
+        image_show (bool, optional). Defaults to False. Opens image in system 
+            default image viewer.
+        verbose (bool, optional). Defaults to False. Prints log to console.
 
     Returns:
         bool or None if both 'filepath' and 'url' are 'None'
