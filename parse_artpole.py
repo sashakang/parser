@@ -1,10 +1,11 @@
 '''
 TODO:
+replace try-except with len(find_elements)
+detect 'new' label in Artpole product images
 chk error msgs in the output
 regex the dimensions or the entire item data string
-use ML to process data string
+use ML to process data string?
 automatically find matches using images and descriptions
-detect 'NEW' labels
 '''
 
 from selenium.common.exceptions import NoSuchElementException
@@ -38,6 +39,7 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
     found_items = pd.DataFrame(columns=[
         'brand',
         'timestamp',
+        'new',
         'cat',
         'name',
         'list_price',
@@ -59,10 +61,19 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
     for item in items:
         name = params = material = id = dimensions = url = None
         list_price = sale_price = discount = 0
+        new = 0
+        
         try:
             name = item.find_element(By.CLASS_NAME, 'sostav-item-name').text
         except NoSuchElementException:
             name = item.find_element(By.CLASS_NAME, 'img-cat-lvl1').get_attribute('title')
+            
+        new_list = item.find_elements(By.CLASS_NAME, 'l-00')
+        
+        if len(new_list) > 0:
+            src = new_list[0].get_attribute('src')
+            if '_new.' in src:
+                new = 1
             
         params = item.find_elements(By.CLASS_NAME, 'sostav-item-artikul-wr')
         
@@ -95,6 +106,7 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
         new_record = pd.Series({
             'brand': brand,
             'timestamp': timestamp,
+            'new': new,
             'cat': group,
             'name': name,
             'list_price': list_price,
@@ -154,6 +166,7 @@ if __name__ == "__main__":
     result = pd.DataFrame(columns=[
         'brand',
         'timestamp',
+        'new',
         'cat',
         'name',
         'list_price',
@@ -207,4 +220,4 @@ if __name__ == "__main__":
     print(f'Completed at {timestamp}UTC in {elapsed_str} seconds.')
  
     send_mail(recipient='kan@dikart.ru', subject=f'Parsed {brand}', message=msg)
-    
+  
