@@ -1,11 +1,12 @@
 '''
 TODO:
+add Dikart parsing for public representation
 replace try-except with len(find_elements)
 detect 'new' label in Artpole product images
 chk error msgs in the output
-regex the dimensions or the entire item data string
+regex the specs or the entire item data string
 use ML to process data string?
-automatically find matches using images and descriptions
+automatically find matches using images and specsiptions
 '''
 
 from selenium.common.exceptions import NoSuchElementException
@@ -46,7 +47,7 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
         'discount',
         'sale_price',
         'id',
-        'dimensions',
+        'specs',
         'url'
     ])
     
@@ -59,7 +60,7 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
         items = driver.find_elements(By.CLASS_NAME, 'preview-new-td')
 
     for item in items:
-        name = params = material = id = dimensions = url = None
+        name = params = material = id = specs = url = None
         list_price = sale_price = discount = 0
         new = 0
         
@@ -85,7 +86,7 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
                 id = txt
         
         try:
-            dimensions = item.find_element(By.CLASS_NAME, 'sostav-item-color-wr').text
+            specs = item.find_element(By.CLASS_NAME, 'sostav-item-color-wr').text
         except NoSuchElementException:
             pass
             
@@ -102,7 +103,7 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
                     discount = txt
             
         url = item.find_element(By.TAG_NAME, 'a').get_attribute('href')
-        print(f'{name=}, {id=}, {material=}, {dimensions=}, {list_price=}, {url=}')
+        print(f'{name=}, {id=}, {material=}, {specs=}, {list_price=}, {url=}')
         new_record = pd.Series({
             'brand': brand,
             'timestamp': timestamp,
@@ -113,7 +114,7 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
             'discount': discount,
             'sale_price': sale_price,
             'id': id,
-            'dimensions': dimensions,
+            'specs': specs,
             'url': url
         })
 
@@ -137,9 +138,9 @@ def clean_data(df):
 
     df.id = df.id.apply(lambda v: 
         v.replace('Артикул: ', '').strip() if pd.notna(v) else v)
-    df.dimensions = df.dimensions.apply(lambda v: 
+    df.specs = df.specs.apply(lambda v: 
         v.replace('Размер: ', '').strip() if pd.notna(v) else v)
-    df.dimensions = df.dimensions.apply(lambda v: 
+    df.specs = df.specs.apply(lambda v: 
         v.replace('мм', '').strip() if pd.notna(v) else v)
     
     return df
@@ -173,7 +174,7 @@ if __name__ == "__main__":
         'discount',
         'sale_price',
         'id',
-        'dimensions',
+        'specs',
         'url'
     ])
     
@@ -187,7 +188,7 @@ if __name__ == "__main__":
         found = clean_data(found)
 
         print(f'\n=>  {engine=}')
-        print(found.head())
+        print(found.iloc[:5, :5])
         found_to_sql = found.to_sql(
             name='parsed',
             con=engine,

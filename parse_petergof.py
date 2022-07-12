@@ -39,7 +39,7 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
         'discount',
         'sale_price',
         'id',
-        'dimensions',
+        'specs',
         'url'
     ])
 
@@ -51,7 +51,7 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
     for item in items:
         name = params = material = id = list_price = url = None
         discount = sale_price = new_record = None
-        dimensions = ''
+        specs = ''
         
         name = item.find_element(By.CLASS_NAME, 'card__name').text.strip()
         
@@ -73,10 +73,10 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
                 except (ValueError, InvalidOperation):
                     list_price = np.nan
             else:
-                if dimensions == '':
-                    dimensions = text
+                if specs == '':
+                    specs = text
                 else:
-                    dimensions += ';' + text
+                    specs += ';' + text
             
         tags = item.find_elements(By.TAG_NAME, 'a')
         for tag in tags:
@@ -85,7 +85,7 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
             id = tag.get_attribute('name')
             
 
-        print(f'{name=}, {id=}, {material=}, {dimensions=}, {list_price=}, {url=}')
+        print(f'{name=}, {id=}, {material=}, {specs=}, {list_price=}, {url=}')
 
         new_record = pd.Series({
             'brand': brand,
@@ -97,7 +97,7 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
             'discount': discount,
             'sale_price': sale_price,
             'id': id,
-            'dimensions': dimensions,
+            'specs': specs,
             'url': url
         })
 
@@ -130,7 +130,7 @@ if __name__ == '__main__':
         'discount',
         'sale_price',
         'id',
-        'dimensions',
+        'specs',
         'url'
     ])
         
