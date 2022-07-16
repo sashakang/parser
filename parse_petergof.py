@@ -43,7 +43,7 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
         'url'
     ])
 
-    timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(time.time()))
+    timestamp = time.strftime('%Y-%d-%m %H:%M:%S', time.gmtime(time.time()))
     
     driver.get(group_url)
     items = driver.find_elements(By.CLASS_NAME, 'card')

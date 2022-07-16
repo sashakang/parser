@@ -26,3 +26,14 @@ The local folder containing the data is:
 
 To bind volume:  
 `sudo docker run -v uduntu-dsk:/path/to/folder [image_name]`
+
+Started from the `parsing` folder on Windows  
+`docker run -it -v "$(pwd):/code" --rm sashakang/parser`  
+Mounts `parsing` folder as /code. But the path to access the credentials will be different for Linux. Still need to work on it.
+
+Docker volume data location (type in file browser):  
+`\\wsl$\docker-desktop-data\version-pack-data\community\docker\volumes\parser-vol\_data\`
+
+To run container on Windows:  
+`docker run -it -v parser_vol:/credentials --rm --shm-size=1g sashakang/parser`  
+provided `.server_analytics` file located in the root of the volume.

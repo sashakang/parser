@@ -1,6 +1,9 @@
 '''
 TODO:
 add Dikart parsing for public representation
+add email notification on parse start
+mail cron output
+start the whole process with a single call
 replace try-except with len(find_elements)
 detect 'new' label in Artpole product images
 chk error msgs in the output
@@ -9,6 +12,7 @@ use ML to process data string?
 automatically find matches using images and specsiptions
 '''
 
+from typing import List
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 import pandas as pd
@@ -53,7 +57,7 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
     
     driver.get(group_url)
 
-    timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(time.time()))
+    timestamp = time.strftime('%Y-%d-%m %H:%M:%S', time.gmtime(time.time()))
     
     items = driver.find_elements(By.CLASS_NAME, 'sostav-coll')
     if len(items) == 0:
@@ -127,6 +131,7 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
 
 
 def clean_data(df):
+    
     df.list_price = df.list_price.apply(lambda v: 
         0 if v == 0 else int(''.join(re.findall('\d+', v))) if pd.notna(v) else 0)
     
@@ -142,6 +147,18 @@ def clean_data(df):
         v.replace('Размер: ', '').strip() if pd.notna(v) else v)
     df.specs = df.specs.apply(lambda v: 
         v.replace('мм', '').strip() if pd.notna(v) else v)
+    
+    # def get_dimension(string: str) -> List:
+    #     pattern1 = re.compile('^(\d+)x(\d+)x(\d+)$')  # 100x80x40
+    #     pattern2 = re.compile('^(\d+)x(\d+)$')    # 120x120
+    #     pattern3 = re.compile('^D(\d+)$')         # D100
+    #     pattern4 = re.compile('^D(\d+)x(\d+)$')   # D1000x100
+        
+    #     if re.match(pattern1, string):
+    #         result = re.match(pattern1, string)
+    #         return result + None
+    
+    
     
     return df
     
@@ -164,20 +181,6 @@ if __name__ == "__main__":
     random.shuffle(groups_list)
     groups = {k: v for k, v in groups_list}
     
-    result = pd.DataFrame(columns=[
-        'brand',
-        'timestamp',
-        'new',
-        'cat',
-        'name',
-        'list_price',
-        'discount',
-        'sale_price',
-        'id',
-        'specs',
-        'url'
-    ])
-    
     log = {}
 
     for group, group_url in groups.items():
@@ -188,7 +191,7 @@ if __name__ == "__main__":
         found = clean_data(found)
 
         print(f'\n=>  {engine=}')
-        print(found.iloc[:5, :5])
+        print(found.iloc[:5, :6])
         found_to_sql = found.to_sql(
             name='parsed',
             con=engine,
@@ -204,7 +207,6 @@ if __name__ == "__main__":
         print(f'{found_to_sql=}')       
         
         log[group] = len(found)
-        result = pd.concat([result, found], ignore_index=True)
         
     # print result
     msg = f'***PARSED {brand}***\n'
@@ -221,4 +223,3 @@ if __name__ == "__main__":
     print(f'Completed at {timestamp}UTC in {elapsed_str} seconds.')
  
     send_mail(recipient='kan@dikart.ru', subject=f'Parsed {brand}', message=msg)
-  
