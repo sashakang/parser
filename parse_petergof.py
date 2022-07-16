@@ -112,7 +112,12 @@ if __name__ == '__main__':
     
     start = time.time()
     print(f'Getting groups from {brand}')
-    
+    send_mail(
+        recipient='kan@dikart.ru', 
+        subject=f'Starting parsing {brand}', 
+        message=''
+        )
+        
     driver = get_webdriver()
     engine = get_engine(fname='../credentials/.server_analytics')
     

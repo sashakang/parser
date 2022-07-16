@@ -34,6 +34,6 @@ Mounts `parsing` folder as /code. But the path to access the credentials will be
 Docker volume data location (type in file browser):  
 `\\wsl$\docker-desktop-data\version-pack-data\community\docker\volumes\parser-vol\_data\`
 
-To run container on Windows:  
-`docker run -it -v parser_vol:/credentials --rm --shm-size=1g sashakang/parser`  
+To run container on Windows or Linux:  
+`docker run -it -v parser-vol:/credentials --rm --shm-size=1g sashakang/parser`  
 provided `.server_analytics` file located in the root of the volume.

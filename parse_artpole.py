@@ -168,6 +168,11 @@ if __name__ == "__main__":
     start = time.time()
 
     print(f'Getting groups from {brand}')
+    send_mail(
+        recipient='kan@dikart.ru', 
+        subject=f'Starting parsing {brand}', 
+        message=''
+        )
     
     engine = get_engine(fname='../credentials/.server_analytics')
     driver = get_webdriver()
@@ -222,4 +227,8 @@ if __name__ == "__main__":
     timestamp = time.strftime('%d.%m.%y %H:%M:%S', time.gmtime(time.time())) 
     print(f'Completed at {timestamp}UTC in {elapsed_str} seconds.')
  
-    send_mail(recipient='kan@dikart.ru', subject=f'Parsed {brand}', message=msg)
+    send_mail(
+        recipient='kan@dikart.ru', 
+        subject=f'Parsed {brand}', 
+        message=msg
+        )
