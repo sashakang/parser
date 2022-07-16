@@ -1,7 +1,9 @@
 '''
 TODO:
+parse specs
+process pilasters, pillars, frames, portals, ceiling frames, panels, 
+    наборные композиции, готовые решения subpages
 add Dikart parsing for public representation
-add email notification on parse start
 mail cron output
 start the whole process with a single call
 replace try-except with len(find_elements)
@@ -13,6 +15,7 @@ automatically find matches using images and specsiptions
 '''
 
 from typing import List
+from numpy import result_type
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 import pandas as pd
@@ -148,17 +151,72 @@ def clean_data(df):
     df.specs = df.specs.apply(lambda v: 
         v.replace('мм', '').strip() if pd.notna(v) else v)
     
-    # def get_dimension(string: str) -> List:
-    #     pattern1 = re.compile('^(\d+)x(\d+)x(\d+)$')  # 100x80x40
-    #     pattern2 = re.compile('^(\d+)x(\d+)$')    # 120x120
-    #     pattern3 = re.compile('^D(\d+)$')         # D100
-    #     pattern4 = re.compile('^D(\d+)x(\d+)$')   # D1000x100
+    def get_dimensions(series: pd.Series):
+        '''
+        Takes a `specs` string to parse.
         
-    #     if re.match(pattern1, string):
-    #         result = re.match(pattern1, string)
-    #         return result + None
-    
-    
+        Returns a cortege:
+        1. width in mm
+        2. height in mm
+        3. depth in mm
+        4. diameter in mm
+        5. weigth in g
+        '''
+        string = series[0]
+        
+        if not string or string == '': return [None, None, None, None, None ]
+        
+        pattern1 = re.compile('^(\d+)x(\d+)x(\d+)$')  # 100x80x40
+        pattern2 = re.compile('^(\d+)x(\d+)$')    # 120x120
+        pattern3 = re.compile('^D(\d+)$')         # D100
+        pattern4 = re.compile('^D(\d+)x(\d+)$')   # D1000x100
+        pattern5 = re.compile('^D(\d+)x(\d+)x(\d+)$')   # D1000x500x100
+        pattern6 = re.compile('^H(\d+)x(\d+)$')   # H500x100
+        pattern7 = re.compile('^H(\d+)x(\d+)x(\d+)$')   # H500x100x20
+        
+        result = re.match(pattern1, string)
+        if result:
+            groups = result.groups()
+            return [int(groups[0]), int(groups[1]), int(groups[2]), None, None]
+        
+        result = re.match(pattern2, string)
+        if result:
+            groups = result.groups()
+            return [int(groups[0]), int(groups[1]), None, None, None]
+        
+        result = re.match(pattern3, string)
+        if result:
+            groups = result.groups()
+            return [None, None, None, int(groups[0]), None]
+        
+        result = re.match(pattern4, string)
+        if result:
+            groups = result.groups()
+            return [None, None, int(groups[1]), int(groups[0]), None]
+        
+        result = re.match(pattern5, string)
+        if result:
+            groups = result.groups()
+            width = max(int(groups[1]), int(groups[0]))
+            height = min(int(groups[1]), int(groups[0]))
+            depth = int(groups[2])
+            return [width, height, depth, None, None]
+
+        result = re.match(pattern6, string)
+        if result:
+            groups = result.groups()
+            return [None, int(groups[0]), int(groups[1]), None, None]
+        
+        result = re.match(pattern7, string)
+        if result:
+            groups = result.groups()
+            return [int(groups[1]), int(groups[0]), int(groups[2]), None, None]
+        
+        print(f'Not recognized {string=}')
+        return [None, None, None, None, None]
+        
+    df[['width_mm', 'height_mm', 'depth_mm', 'diameter_mm', 'weight_g']] = \
+        df[['specs']].apply(get_dimensions, axis=1, result_type='expand')
     
     return df
     

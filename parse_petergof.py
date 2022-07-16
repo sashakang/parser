@@ -1,3 +1,8 @@
+'''
+TODO:
+parse specs
+- does Decimal really needed?
+'''
 from selenium.webdriver.common.by import By
 import pandas as pd
 import numpy as np
