@@ -2,8 +2,8 @@
 TODO:
 parse specs
 process pilasters, pillars, frames, portals, ceiling frames, panels, 
-    наборные композиции, готовые решения subpages
-add Dikart parsing for public representation
+save full description?
+add Dikart
 mail cron output
 start the whole process with a single call
 replace try-except with len(find_elements)
@@ -14,8 +14,6 @@ use ML to process data string?
 automatically find matches using images and specsiptions
 '''
 
-from typing import List
-from numpy import result_type
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 import pandas as pd
@@ -35,9 +33,13 @@ def get_groups():
     groups = {}
 
     for group in found:
-        text = group.text.split('\n')[0]
-        link = group.find_element(By.TAG_NAME, "a").get_attribute('href')
-        groups[text] = link
+        # text = group.text.split('\n')[0]
+        found_tags = group.find_elements(By.TAG_NAME, 'span')
+        for tag in found_tags:
+            if tag.get_attribute('itemprop') == 'name':
+                text = tag.text
+                link = group.find_element(By.TAG_NAME, "a").get_attribute('href')
+                groups[text] = link
         
     return groups
 
@@ -60,6 +62,7 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
     
     driver.get(group_url)
 
+    time.sleep(2)
     timestamp = time.strftime('%Y-%d-%m %H:%M:%S', time.gmtime(time.time()))
     
     items = driver.find_elements(By.CLASS_NAME, 'sostav-coll')
@@ -247,29 +250,30 @@ if __name__ == "__main__":
     log = {}
 
     for group, group_url in groups.items():
-        # if group != 'Карнизы гладкие' : continue
+        # if group != 'Гипсовые светильники' : continue
         print('\n', '>'*20, 'Getting', group, '<'*20)
         found = get_group(group, group_url)
         
-        found = clean_data(found)
+        if len(found) > 0:
+            found = clean_data(found)
 
-        print(f'\n=>  {engine=}')
-        print(found.iloc[:5, :6])
-        found_to_sql = found.to_sql(
-            name='parsed',
-            con=engine,
-            if_exists='append',
-            index=False,
-            dtype={
-                'timestamp': sqlalchemy.DateTime,
-                'list_price': sqlalchemy.Numeric,
-                'discount': sqlalchemy.Float,
-                'sale_price': sqlalchemy.Numeric
-            }
-        ) 
-        print(f'{found_to_sql=}')       
-        
-        log[group] = len(found)
+            print(f'\n=>  {engine=}')
+            print(found.iloc[:5, :6])
+            found_to_sql = found.to_sql(
+                name='parsed',
+                con=engine,
+                if_exists='append',
+                index=False,
+                dtype={
+                    'timestamp': sqlalchemy.DateTime,
+                    'list_price': sqlalchemy.Numeric,
+                    'discount': sqlalchemy.Float,
+                    'sale_price': sqlalchemy.Numeric
+                }
+            ) 
+            print(f'{found_to_sql=}')       
+            
+            log[group] = len(found)
         
     # print result
     msg = f'***PARSED {brand}***\n'
@@ -289,4 +293,4 @@ if __name__ == "__main__":
         recipient='kan@dikart.ru', 
         subject=f'Parsed {brand}', 
         message=msg
-        )
+    )
