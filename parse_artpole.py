@@ -278,6 +278,7 @@ if __name__ == "__main__":
     # print result
     msg = f'***PARSED {brand}***\n'
     print('*' * 15, 'PARSED', brand, '*' * 16)
+    log = {k: log[k] for k in sorted(log)}
     for group, count in log.items():
         print(f'{group}: {count}')
         msg += f'{group}: {count}\n'
