@@ -173,9 +173,6 @@ if __name__ == '__main__':
             }
         )
         
-        #debug
-        break
-        
     # print result
     msg = f'***PARSED {brand}***\n'
     print('*' * 15, 'PARSED', brand, '*' * 16)

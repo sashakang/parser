@@ -275,9 +275,6 @@ if __name__ == "__main__":
             
             log[group] = len(found)
         
-        #debug
-        break
-        
     # print result
     msg = f'***PARSED {brand}***\n'
     print('*' * 15, 'PARSED', brand, '*' * 16)
