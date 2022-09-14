@@ -43,13 +43,12 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
         'sale_price',
         'id',
         'specs',
-        'url',
-        'unit_id'
+        'url'
     ])
     
     driver.get(group_url)
 
-    timestamp = time.strftime('%Y-%d-%m %H:%M:%S', time.gmtime(time.time()))
+    timestamp = time.strftime('%Y-%d-%m %H:%M:%S', time.localtime())
     
     items = driver.find_elements(By.CLASS_NAME, 'product-item')
 
@@ -75,8 +74,7 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
             'sale_price': sale_price,
             'id': id,
             'specs': specs,
-            'url': url,
-            'unit_id': None
+            'url': url
         })
 
         found_items.loc[len(found_items)] = new_record
@@ -88,24 +86,6 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
 
 
 def clean_data(df):
-    
-    def get_unit(string) -> int:    
-        '''
-        returns int code of unit_id according to `units` table
-        '''
-        if string.lower().startswith('от '):
-            return None
-        if ' руб./п.м.' in string:
-            return 0
-        if ' руб./шт.' in string:
-            return 1
-        if ' руб./пар.' in string:
-            return 2
-        if ' руб./компл.' in string:
-            return 4
-        return None
-        
-    df.unit_id = df.list_price.apply(get_unit)
     
     def get_list_price(s) -> float:
         if s.lower().startswith('от'):
@@ -160,7 +140,7 @@ if __name__ == "__main__":
             print(f'\n=>  {engine=}')
             print(found.iloc[:5, :6])
             found_to_sql = found.to_sql(
-                name='parsed_dev',
+                name='parsed',
                 con=engine,
                 if_exists='append',
                 index=False,
@@ -187,7 +167,7 @@ if __name__ == "__main__":
     
     elapsed_time = time.time() - start
     elapsed_str = time.strftime('%H:%M:%S', time.gmtime(elapsed_time))
-    timestamp = time.strftime('%d.%m.%y %H:%M:%S', time.gmtime(time.time())) 
+    timestamp = time.strftime('%d.%m.%y %H:%M:%S', time.localtime()) 
     print(f'Completed at {timestamp}UTC in {elapsed_str} seconds.')
  
     send_mail(
