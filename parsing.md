@@ -1,3 +1,6 @@
+# `webdriver`
+
+
 # Build & Use
 To build an image from the `app` folder:  
 `docker build -t sashakang/parser .`
@@ -9,7 +12,7 @@ To parse Artpole just run the image:
 `docker run -it --shm-size=1g --rm sashakang/parser`
 
 To parse Petergof:  
-`docker run -it --shm-size=1g --rm sashakang/parser python parse_petergof.py`
+`docker run -it --shm-size=1g --rm -v parser-vol:/credentials sashakang/parser python parse_petergof.py`
 
 To schedule a job need root privileges for cron:  
 `sudo crontab -eu root`
@@ -42,4 +45,4 @@ On Windows docker volume data location (type in file browser):
 
 To run container on Windows or Linux:  
 `docker run -it -v parser-vol:/credentials --rm --shm-size=1g sashakang/parser`  
-provided `.server_analytics` file located in the root of the volume.
+provided `.server_analytics` file located in the root of the volume

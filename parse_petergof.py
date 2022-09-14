@@ -48,7 +48,7 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
         'url'
     ])
 
-    timestamp = time.strftime('%Y-%d-%m %H:%M:%S', time.gmtime(time.time()))
+    timestamp = time.strftime('%Y-%d-%m %H:%M:%S', time.localtime())
     
     driver.get(group_url)
     items = driver.find_elements(By.CLASS_NAME, 'card')
@@ -115,7 +115,7 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
 
 if __name__ == '__main__':
     
-    start = time.time()
+    start = time.mktime(time.localtime())
     print(f'Getting groups from {brand}')
     send_mail(
         recipient='kan@dikart.ru', 
@@ -173,6 +173,9 @@ if __name__ == '__main__':
             }
         )
         
+        #debug
+        break
+        
     # print result
     msg = f'***PARSED {brand}***\n'
     print('*' * 15, 'PARSED', brand, '*' * 16)
@@ -185,7 +188,7 @@ if __name__ == '__main__':
     
     send_mail(recipient='kan@dikart.ru', subject=f'Parsed {brand}', message=msg)
     
-    elapsed_time = time.time() - start
+    elapsed_time = time.mktime(time.localtime()) - start
     elapsed_str = time.strftime('%H:%M:%S', time.gmtime(elapsed_time))
-    timestamp = time.strftime('%d.%m.%y %H:%M:%S', time.gmtime(time.time())) 
+    timestamp = time.strftime('%d.%m.%y %H:%M:%S', time.localtime()) 
     print(f'Completed at {timestamp}UTC in {elapsed_str} seconds.')
