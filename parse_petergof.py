@@ -1,3 +1,8 @@
+'''
+TODO:
+parse specs
+- does Decimal really needed?
+'''
 from selenium.webdriver.common.by import By
 import pandas as pd
 import numpy as np
@@ -5,6 +10,8 @@ import time
 import sqlalchemy
 from services import get_engine, send_mail, get_webdriver
 from decimal import *
+from datetime import datetime as dt
+from dateutil import tz
 setcontext(BasicContext)
 D = Decimal
 
@@ -39,11 +46,12 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
         'discount',
         'sale_price',
         'id',
-        'dimensions',
+        'specs',
         'url'
     ])
 
-    timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(time.time()))
+    timestamp = dt.utcnow().replace(tzinfo = from_zone).astimezone(to_zone)
+    timestamp = timestamp.strftime('%d.%m.%y %H:%M:%S')
     
     driver.get(group_url)
     items = driver.find_elements(By.CLASS_NAME, 'card')
@@ -51,7 +59,7 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
     for item in items:
         name = params = material = id = list_price = url = None
         discount = sale_price = new_record = None
-        dimensions = ''
+        specs = ''
         
         name = item.find_element(By.CLASS_NAME, 'card__name').text.strip()
         
@@ -73,10 +81,10 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
                 except (ValueError, InvalidOperation):
                     list_price = np.nan
             else:
-                if dimensions == '':
-                    dimensions = text
+                if specs == '':
+                    specs = text
                 else:
-                    dimensions += ';' + text
+                    specs += ';' + text
             
         tags = item.find_elements(By.TAG_NAME, 'a')
         for tag in tags:
@@ -85,7 +93,7 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
             id = tag.get_attribute('name')
             
 
-        print(f'{name=}, {id=}, {material=}, {dimensions=}, {list_price=}, {url=}')
+        print(f'{name=}, {id=}, {material=}, {specs=}, {list_price=}, {url=}')
 
         new_record = pd.Series({
             'brand': brand,
@@ -97,7 +105,7 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
             'discount': discount,
             'sale_price': sale_price,
             'id': id,
-            'dimensions': dimensions,
+            'specs': specs,
             'url': url
         })
 
@@ -110,9 +118,17 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
 
 if __name__ == '__main__':
     
-    start = time.time()
+    start = time.mktime(time.localtime())
     print(f'Getting groups from {brand}')
-    
+    send_mail(
+        recipient='kan@dikart.ru', 
+        subject=f'Starting parsing {brand}', 
+        message=''
+        )
+        
+    from_zone = tz.tzutc()
+    to_zone = tz.gettz("Europe/Moscow")      
+        
     driver = get_webdriver()
     engine = get_engine(fname='../credentials/.server_analytics')
     
@@ -130,7 +146,7 @@ if __name__ == '__main__':
         'discount',
         'sale_price',
         'id',
-        'dimensions',
+        'specs',
         'url'
     ])
         
@@ -166,6 +182,7 @@ if __name__ == '__main__':
     # print result
     msg = f'***PARSED {brand}***\n'
     print('*' * 15, 'PARSED', brand, '*' * 16)
+    log = {k: log[k] for k in sorted(log)}
     for group, count in log.items():
         print(f'{group}: {count}')
         msg += f'{group}: {count}\n'
@@ -174,7 +191,7 @@ if __name__ == '__main__':
     
     send_mail(recipient='kan@dikart.ru', subject=f'Parsed {brand}', message=msg)
     
-    elapsed_time = time.time() - start
+    elapsed_time = time.mktime(time.localtime()) - start
     elapsed_str = time.strftime('%H:%M:%S', time.gmtime(elapsed_time))
-    timestamp = time.strftime('%d.%m.%y %H:%M:%S', time.gmtime(time.time())) 
+    timestamp = time.strftime('%d.%m.%y %H:%M:%S', time.localtime()) 
     print(f'Completed at {timestamp}UTC in {elapsed_str} seconds.')

@@ -1,5 +1,4 @@
 # v.0.2
-# added `get_credentials` method
 from typing import Union
 from sqlalchemy import create_engine, engine
 import smtplib, ssl
@@ -7,10 +6,11 @@ from selenium import webdriver
 
 
 def get_engine(
-    fname: str = './.server',
+    fname: str = '../credentials/.server_analytics',
     db: str = None
 ) -> engine.base.Engine:
     
+    # TODO: duplicated
     with open(fname, 'r') as f:
         for line in f:
             # print(f'{line=}')
@@ -85,7 +85,7 @@ def send_mail(
 
     with smtplib.SMTP_SSL("smtp.gmail.com", port, context=context) as server:
         # server.ehlo()
-        server.login("parsing.bot.no.1@gmail.com", password)
+        server.login(sender_email, password)
         server.sendmail(sender_email, recipient, msg)
         
     print(f'Sent mail to {recipient}')
@@ -108,7 +108,7 @@ def get_webdriver():
     options.add_argument('log-level=1')
     
     driver = webdriver.Chrome(options=options)    
-    driver.implicitly_wait(4)
+    driver.implicitly_wait(1)
     
     return driver    
     

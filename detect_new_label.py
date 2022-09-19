@@ -1,3 +1,6 @@
+"""
+Not added to 'services.py' yet to avoid adding new libs to production dependencies.
+"""
 from http.client import responses
 import numpy as np
 from PIL import Image
