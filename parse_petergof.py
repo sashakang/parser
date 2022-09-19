@@ -10,6 +10,8 @@ import time
 import sqlalchemy
 from services import get_engine, send_mail, get_webdriver
 from decimal import *
+from datetime import datetime as dt
+from dateutil import tz
 setcontext(BasicContext)
 D = Decimal
 
@@ -48,7 +50,8 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
         'url'
     ])
 
-    timestamp = time.strftime('%Y-%d-%m %H:%M:%S', time.localtime())
+    timestamp = dt.utcnow().replace(tzinfo = from_zone).astimezone(to_zone)
+    timestamp = timestamp.strftime('%d.%m.%y %H:%M:%S')
     
     driver.get(group_url)
     items = driver.find_elements(By.CLASS_NAME, 'card')
@@ -122,6 +125,9 @@ if __name__ == '__main__':
         subject=f'Starting parsing {brand}', 
         message=''
         )
+        
+    from_zone = tz.tzutc()
+    to_zone = tz.gettz("Europe/Moscow")      
         
     driver = get_webdriver()
     engine = get_engine(fname='../credentials/.server_analytics')

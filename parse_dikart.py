@@ -5,6 +5,8 @@ import re
 import time
 import sqlalchemy
 from services import get_engine, send_mail, get_webdriver
+from datetime import datetime as dt
+from dateutil import tz
 
 
 brand = 'Дикарт'
@@ -48,7 +50,8 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
     
     driver.get(group_url)
 
-    timestamp = time.strftime('%Y-%d-%m %H:%M:%S', time.localtime())
+    timestamp = dt.utcnow().replace(tzinfo = from_zone).astimezone(to_zone)
+    timestamp = timestamp.strftime('%d.%m.%y %H:%M:%S')
     
     items = driver.find_elements(By.CLASS_NAME, 'product-item')
 
@@ -106,7 +109,10 @@ def clean_data(df):
 
 if __name__ == "__main__":
     print('Starting v.0.2')
-    start = time.time()
+    start = time.mktime(time.localtime())
+    
+    from_zone = tz.tzutc()
+    to_zone = tz.gettz("Europe/Moscow")    
 
     print(f'Getting groups from {brand}')
     send_mail(
@@ -130,7 +136,9 @@ if __name__ == "__main__":
     log = {}
 
     for group, group_url in groups.items():
+        # DEBUG
         # if group != 'Карнизы гладкие' : continue
+        
         print('\n', '>'*20, 'Getting', group, '<'*20)
         found = get_group(group, group_url)
         
@@ -165,10 +173,10 @@ if __name__ == "__main__":
     print('*' * 40)
     msg += '***END***'
     
-    elapsed_time = time.time() - start
+    elapsed_time = time.mktime(time.localtime()) - start
     elapsed_str = time.strftime('%H:%M:%S', time.gmtime(elapsed_time))
     timestamp = time.strftime('%d.%m.%y %H:%M:%S', time.localtime()) 
-    print(f'Completed at {timestamp}UTC in {elapsed_str} seconds.')
+    print(f'Completed at {timestamp} in {elapsed_str}')
  
     send_mail(
         recipient='kan@dikart.ru', 

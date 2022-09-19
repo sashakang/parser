@@ -6,7 +6,7 @@ from selenium import webdriver
 
 
 def get_engine(
-    fname: str = './.server',
+    fname: str = '../credentials/.server_analytics',
     db: str = None
 ) -> engine.base.Engine:
     
@@ -85,7 +85,7 @@ def send_mail(
 
     with smtplib.SMTP_SSL("smtp.gmail.com", port, context=context) as server:
         # server.ehlo()
-        server.login("parsing.bot.no.1@gmail.com", password)
+        server.login(sender_email, password)
         server.sendmail(sender_email, recipient, msg)
         
     print(f'Sent mail to {recipient}')

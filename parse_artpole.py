@@ -21,6 +21,8 @@ import re
 import time
 import sqlalchemy
 from services import get_engine, send_mail, get_webdriver
+from datetime import datetime as dt
+from dateutil import tz
 
 
 brand = 'Артполе'
@@ -63,7 +65,8 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
     driver.get(group_url)
 
     time.sleep(2)
-    timestamp = time.strftime('%d.%m.%y %H:%M:%S', time.localtime())
+    timestamp = dt.utcnow().replace(tzinfo = from_zone).astimezone(to_zone)
+    timestamp = timestamp.strftime('%d.%m.%y %H:%M:%S')
     
     items = driver.find_elements(By.CLASS_NAME, 'sostav-coll')
     if len(items) == 0:
@@ -227,6 +230,9 @@ def clean_data(df):
 if __name__ == "__main__":
     print('Starting v.0.2')
     start = time.mktime(time.localtime())
+    
+    from_zone = tz.tzutc()
+    to_zone = tz.gettz("Europe/Moscow")    
 
     print(f'Getting groups from {brand}')
     send_mail(
@@ -287,11 +293,7 @@ if __name__ == "__main__":
     
     elapsed_time = time.mktime(time.localtime()) - start
     elapsed_str = time.strftime('%H:%M:%S', time.gmtime(elapsed_time))
-    timestamp = time.strftime('%d.%m.%y %H:%M:%S', time.localtime())
-    print(f'Completed at {timestamp}UTC in {elapsed_str} seconds.')
- 
-    send_mail(
-        recipient='kan@dikart.ru', 
-        subject=f'Parsed {brand}', 
-        message=msg
-    )
+    timestamp = dt.utcnow().replace(tzinfo = from_zone).astimezone(to_zone)
+    timestamp = timestamp.strftime('%d.%m.%y %H:%M:%S')
+    print(f'Completed at {timestamp} in {elapsed_str} seconds')
+      
