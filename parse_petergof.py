@@ -166,8 +166,15 @@ def parse_petergof(dev=True):
     for group, url in groups.items():
         # if group != 'Кариатиды': continue
         print('\n', '>'*15, 'Getting', group, '<'*15)
-        found = get_group(group, url)
         
+        found = None
+        i = 0
+        while found is None and i < 5:
+            try:
+                found = get_group(group, url)
+            except:
+                i += 1
+                
         log[group] = len(found)
         
         print(f'\n=>  {engine=}')

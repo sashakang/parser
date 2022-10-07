@@ -262,8 +262,15 @@ def parse_artpole(dev=True):
     for group, group_url in groups.items():
         # if group != 'Колонны' : continue
         print('\n', '>'*20, 'Getting', group, '<'*20)
-        found = get_group(group, group_url)
         
+        found = None
+        i = 0
+        while found is None and i < 5:
+            try:
+                found = get_group(group, group_url)
+            except:
+                i += 1
+                
         if len(found) > 0:
             found = clean_data(found)
 

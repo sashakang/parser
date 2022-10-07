@@ -146,7 +146,13 @@ def parse_dikart(dev=True):
         # if group != 'Плинтусы' : continue
         
         print('\n', '>'*20, 'Getting', group, '<'*20)
-        found = get_group(group, group_url)
+        found = None
+        i = 0
+        while found is None and i < 5:
+            try:
+                found = get_group(group, group_url)
+            except:
+                i += 1
         
         if len(found) > 0:
             found = clean_data(found)
@@ -193,5 +199,3 @@ def parse_dikart(dev=True):
 if __name__ == "__main__":
     dev = parse_args(sys.argv)
     parse_dikart(dev)
-    
-    
