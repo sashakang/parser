@@ -1,3 +1,13 @@
+# RUN
+
+## Options
+
+`-d,` `--dev` - development mode, `true` or `false`, case insensitive.
+
+# TODO
+
+Make all processes run from under a single procedure.
+
 # `webdriver`
 
 
@@ -45,4 +55,7 @@ On Windows docker volume data location (type in file browser):
 
 To run container on Windows or Linux:  
 `docker run -it -v parser-vol:/credentials --rm --shm-size=1g sashakang/parser`  
-provided `.server_analytics` file located in the root of the volume
+provided `.server_analytics` file located in the root o
+
+
+

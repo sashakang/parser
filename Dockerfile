@@ -16,6 +16,7 @@ RUN unzip /tmp/chromedriver.zip chromedriver -d /usr/local/bin/
 # # INSTALL MSSQL ODBC DRIVERS
 RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
 RUN curl https://packages.microsoft.com/config/debian/9/prod.list > /etc/apt/sources.list.d/mssql-release.list
+RUN apt-get -y update
 RUN apt-get install -y --no-install-recommends \
         locales \
         apt-transport-https
@@ -36,4 +37,4 @@ RUN pip install -r requirements.txt
 COPY . .
 
 ENTRYPOINT [  ]
-CMD ["python", "parse_artpole.py"]
+CMD ["python", "run_all.py"]

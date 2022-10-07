@@ -8,17 +8,37 @@ import pandas as pd
 import numpy as np
 import time
 import sqlalchemy
-from services import get_engine, send_mail, get_webdriver
+from services import get_engine, send_mail, get_webdriver, parse_args
 from decimal import *
 from datetime import datetime as dt
 from dateutil import tz
+import sys
 setcontext(BasicContext)
 D = Decimal
+        
+from_zone = tz.tzutc()
+to_zone = tz.gettz("Europe/Moscow")      
+    
+driver = get_webdriver()
+engine = get_engine(fname='../credentials/.server_analytics')
 
 brand = 'Петергоф'
             
+result = pd.DataFrame(columns=[
+    'brand', 
+    'timestamp',
+    'new',
+    'cat',
+    'name',
+    'list_price',
+    'discount',
+    'sale_price',
+    'id',
+    'specs',
+    'url'
+])
 
-def get_groups(path: str = 'список для парсинга.xlsb'):
+def get_groups():
     
     driver.get('https://lepnina.ru/products/')
     
@@ -116,39 +136,25 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
         
     return found_items
 
-if __name__ == '__main__':
-    
+
+def parse_petergof(dev=True):    
     start = time.mktime(time.localtime())
+    
+    if dev:
+        table = 'parsed_dev'
+    else:
+        table = 'parsed'
+    
     print(f'Getting groups from {brand}')
     send_mail(
         recipient='kan@dikart.ru', 
         subject=f'Starting parsing {brand}', 
         message=''
         )
-        
-    from_zone = tz.tzutc()
-    to_zone = tz.gettz("Europe/Moscow")      
-        
-    driver = get_webdriver()
-    engine = get_engine(fname='../credentials/.server_analytics')
     
     groups = get_groups()
     for k, v in groups.items():
         print(k, v)
-        
-    result = pd.DataFrame(columns=[
-        'brand', 
-        'timestamp',
-        'new',
-        'cat',
-        'name',
-        'list_price',
-        'discount',
-        'sale_price',
-        'id',
-        'specs',
-        'url'
-    ])
         
     log = {}
 
@@ -158,7 +164,7 @@ if __name__ == '__main__':
     groups = {k: v for k, v in groups_list}
     
     for group, url in groups.items():
-        # if group != 'Розетки': continue
+        # if group != 'Кариатиды': continue
         print('\n', '>'*15, 'Getting', group, '<'*15)
         found = get_group(group, url)
         
@@ -167,7 +173,7 @@ if __name__ == '__main__':
         print(f'\n=>  {engine=}')
 
         found.to_sql(
-            name='parsed',
+            name=table,
             con=engine,
             if_exists='append',
             index=False,
@@ -195,3 +201,9 @@ if __name__ == '__main__':
     elapsed_str = time.strftime('%H:%M:%S', time.gmtime(elapsed_time))
     timestamp = time.strftime('%d.%m.%y %H:%M:%S', time.localtime()) 
     print(f'Completed at {timestamp}UTC in {elapsed_str} seconds.')
+
+
+if __name__ == '__main__':
+    dev = parse_args(sys.argv)
+    parse_petergof(dev)
+    
