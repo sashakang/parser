@@ -23,6 +23,7 @@ import sqlalchemy
 from services import get_engine, send_mail, get_webdriver, parse_args
 from datetime import datetime as dt
 from dateutil import tz
+import sys
     
 from_zone = tz.tzutc()
 to_zone = tz.gettz("Europe/Moscow")    
@@ -293,7 +294,8 @@ def parse_artpole(dev=True):
             log[group] = len(found)
         
     # print result
-    msg = f'***PARSED {brand}***\n'
+    msg = f'{table=}\n'
+    msg += f'***PARSED {brand}***\n'
     print('*' * 15, 'PARSED', brand, '*' * 16)
     log = {k: log[k] for k in sorted(log)}
     for group, count in log.items():

@@ -176,7 +176,8 @@ def parse_dikart(dev=True):
             log[group] = len(found)
         
     # print result
-    msg = f'***PARSED {brand}***\n'
+    msg = f'{table=}\n'
+    msg += f'***PARSED {brand}***\n'
     print('*' * 15, 'PARSED', brand, '*' * 16)
     log = {k: log[k] for k in sorted(log)}
     for group, count in log.items():
