@@ -4,9 +4,16 @@ import pandas as pd
 import re
 import time
 import sqlalchemy
-from services import get_engine, send_mail, get_webdriver
+from services import get_engine, send_mail, get_webdriver, parse_args
 from datetime import datetime as dt
 from dateutil import tz
+import sys
+
+engine = get_engine(fname='../credentials/.server_analytics')
+driver = get_webdriver()
+    
+from_zone = tz.tzutc()
+to_zone = tz.gettz("Europe/Moscow")    
 
 
 brand = 'Дикарт'
@@ -107,22 +114,21 @@ def clean_data(df):
     return df
     
 
-if __name__ == "__main__":
+def parse_dikart(dev=True):
     print('Starting v.0.2')
     start = time.mktime(time.localtime())
-    
-    from_zone = tz.tzutc()
-    to_zone = tz.gettz("Europe/Moscow")    
 
+    if dev:
+        table = 'parsed_dev'
+    else:
+        table = 'parsed'
+            
     print(f'Getting groups from {brand}')
     send_mail(
         recipient='kan@dikart.ru', 
         subject=f'Starting parsing {brand}', 
         message=''
         )
-    
-    engine = get_engine(fname='../credentials/.server_analytics')
-    driver = get_webdriver()
     
     groups = get_groups()
     for group, url in groups.items():
@@ -137,18 +143,24 @@ if __name__ == "__main__":
 
     for group, group_url in groups.items():
         # DEBUG
-        # if group != 'Карнизы гладкие' : continue
+        # if group != 'Плинтусы' : continue
         
         print('\n', '>'*20, 'Getting', group, '<'*20)
-        found = get_group(group, group_url)
+        found = None
+        i = 0
+        while found is None and i < 5:
+            try:
+                found = get_group(group, group_url)
+            except:
+                i += 1
         
-        if len(found) > 0:
+        if len(found) > 0: 
             found = clean_data(found)
 
             print(f'\n=>  {engine=}')
             print(found.iloc[:5, :6])
             found_to_sql = found.to_sql(
-                name='parsed',
+                name=table,
                 con=engine,
                 if_exists='append',
                 index=False,
@@ -164,7 +176,8 @@ if __name__ == "__main__":
             log[group] = len(found)
         
     # print result
-    msg = f'***PARSED {brand}***\n'
+    msg = f'{table=}\n'
+    msg += f'***PARSED {brand}***\n'
     print('*' * 15, 'PARSED', brand, '*' * 16)
     log = {k: log[k] for k in sorted(log)}
     for group, count in log.items():
@@ -183,3 +196,7 @@ if __name__ == "__main__":
         subject=f'Parsed {brand}', 
         message=msg
     )
+    
+if __name__ == "__main__":
+    dev = parse_args(sys.argv)
+    parse_dikart(dev)

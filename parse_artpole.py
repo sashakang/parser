@@ -20,10 +20,16 @@ import pandas as pd
 import re
 import time
 import sqlalchemy
-from services import get_engine, send_mail, get_webdriver
+from services import get_engine, send_mail, get_webdriver, parse_args
 from datetime import datetime as dt
 from dateutil import tz
-
+import sys
+    
+from_zone = tz.tzutc()
+to_zone = tz.gettz("Europe/Moscow")    
+    
+engine = get_engine(fname='../credentials/.server_analytics')
+driver = get_webdriver()
 
 brand = 'Артполе'
 
@@ -65,6 +71,7 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
     driver.get(group_url)
 
     time.sleep(2)
+
     timestamp = dt.utcnow().replace(tzinfo = from_zone).astimezone(to_zone)
     timestamp = timestamp.strftime('%d.%m.%y %H:%M:%S')
     
@@ -226,23 +233,21 @@ def clean_data(df):
     
     return df
     
-
-if __name__ == "__main__":
+def parse_artpole(dev=True):
     print('Starting v.0.2')
     start = time.mktime(time.localtime())
-    
-    from_zone = tz.tzutc()
-    to_zone = tz.gettz("Europe/Moscow")    
 
+    if dev:
+        table = 'parsed_dev'
+    else:
+        table = 'parsed'
+        
     print(f'Getting groups from {brand}')
     send_mail(
         recipient='kan@dikart.ru', 
         subject=f'Starting parsing {brand}', 
         message=''
         )
-    
-    engine = get_engine(fname='../credentials/.server_analytics')
-    driver = get_webdriver()
     
     groups = get_groups()
     for group, url in groups.items():
@@ -256,17 +261,24 @@ if __name__ == "__main__":
     log = {}
 
     for group, group_url in groups.items():
-        # if group != 'Гипсовые светильники' : continue
+        # if group != 'Колонны' : continue
         print('\n', '>'*20, 'Getting', group, '<'*20)
-        found = get_group(group, group_url)
         
+        found = None
+        i = 0
+        while found is None and i < 5:
+            try:
+                found = get_group(group, group_url)
+            except:
+                i += 1
+                
         if len(found) > 0:
             found = clean_data(found)
 
             print(f'\n=>  {engine=}')
             print(found.iloc[:5, :6])
             found_to_sql = found.to_sql(
-                name='parsed',
+                name=table,
                 con=engine,
                 if_exists='append',
                 index=False,
@@ -282,7 +294,8 @@ if __name__ == "__main__":
             log[group] = len(found)
         
     # print result
-    msg = f'***PARSED {brand}***\n'
+    msg = f'{table=}\n'
+    msg += f'***PARSED {brand}***\n'
     print('*' * 15, 'PARSED', brand, '*' * 16)
     log = {k: log[k] for k in sorted(log)}
     for group, count in log.items():
@@ -290,10 +303,17 @@ if __name__ == "__main__":
         msg += f'{group}: {count}\n'
     print('*' * 40)
     msg += '***END***'
+    send_mail(recipient='kan@dikart.ru', subject=f'Parsed {brand}', message=msg)
     
     elapsed_time = time.mktime(time.localtime()) - start
     elapsed_str = time.strftime('%H:%M:%S', time.gmtime(elapsed_time))
     timestamp = dt.utcnow().replace(tzinfo = from_zone).astimezone(to_zone)
     timestamp = timestamp.strftime('%d.%m.%y %H:%M:%S')
+
     print(f'Completed at {timestamp} in {elapsed_str} seconds')
-      
+    
+        
+if __name__ == "__main__":
+    dev = parse_args(sys.argv)
+    parse_artpole(dev)
+    

@@ -1,4 +1,5 @@
 # v.0.2
+from argparse import ArgumentError
 from typing import Union
 from sqlalchemy import create_engine, engine
 import smtplib, ssl
@@ -111,6 +112,19 @@ def get_webdriver():
     driver.implicitly_wait(1)
     
     return driver    
+
+def parse_args(args):
+    if len(args) > 1:
+        if args[1] in ['-d', '--dev'] and len(args) >= 3:
+            if args[2].lower() == "true":
+                return True
+            elif args[2].lower() == "false":
+                return False
+            else:
+                raise ArgumentError('Invalid argument')
+        else:
+            raise ArgumentError('Invalid argument')    
+        
     
 
 if __name__ == '__main__':
