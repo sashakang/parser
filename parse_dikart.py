@@ -154,7 +154,7 @@ def parse_dikart(dev=True):
             except:
                 i += 1
         
-        if len(found) > 0:
+        if len(found) > 0: 
             found = clean_data(found)
 
             print(f'\n=>  {engine=}')

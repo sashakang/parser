@@ -13,7 +13,7 @@ RUN apt-get install -yqq unzip
 RUN wget -O /tmp/chromedriver.zip http://chromedriver.storage.googleapis.com/`curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE`/chromedriver_linux64.zip
 RUN unzip /tmp/chromedriver.zip chromedriver -d /usr/local/bin/
 
-# # INSTALL MSSQL ODBC DRIVERS
+# INSTALL MSSQL ODBC DRIVERS
 RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
 RUN curl https://packages.microsoft.com/config/debian/9/prod.list > /etc/apt/sources.list.d/mssql-release.list
 RUN apt-get -y update
@@ -30,11 +30,15 @@ RUN ACCEPT_EULA=Y apt-get -y --no-install-recommends install msodbcsql17
 RUN mkdir /code
 WORKDIR /code
 
+# copy separately to reuse cached dependencies so that when the code changes 
+# dependencies won't be redownloaded (https://www.youtube.com/watch?v=zkMRWDQV4Tg&t=265s)
+COPY ./requirements.txt /code   
+RUN python -m pip install -U pip
+RUN pip install --no-cache-dir --upgrade -r requirements.txt 
+
 COPY . /code/
 
-RUN python -m pip install -U pip
-RUN pip install -r requirements.txt 
 COPY . .
 
 ENTRYPOINT [  ]
-CMD ["python", "run_all.py"]
+CMD ["python", "run_all.py
