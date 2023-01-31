@@ -18,7 +18,7 @@ To build an image from the `app` folder:
 To avoid crashing Chrome from within the container increase size of shared memory like so:  
 `docker run -it --shm-size=1g --rm sashakang/parser`
 
-To parse Artpole just run the image:  
+To parse everything just run the image:  
 `docker run -it --shm-size=1g --rm sashakang/parser`
 
 To parse Petergof:  
@@ -26,6 +26,11 @@ To parse Petergof:
 
 To schedule a job need root privileges for cron:  
 `sudo crontab -eu root`
+
+OR
+
+Switch to root user `sudo su -`.  
+Then in terminal browse to `/etc` folder and edit `crontab` file under root user: `nano crontab`.
 
 To run container in cron do not use `-it` option, i.e.  
 `docker run --shm-size=1g --rm parser python parse_petergof.py`
@@ -57,5 +62,7 @@ To run container on Windows or Linux:
 `docker run -it -v parser-vol:/credentials --rm --shm-size=1g sashakang/parser`  
 provided `.server_analytics` file located in the root o
 
+# Attach terminal to a running container
 
+`docker exec -it [container ID] bash`
 

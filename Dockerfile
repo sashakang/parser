@@ -37,8 +37,8 @@ RUN python -m pip install -U pip
 RUN pip install --no-cache-dir --upgrade -r requirements.txt 
 
 COPY . /code/
-
-COPY . .
+# 
+# COPY . .    
 
 ENTRYPOINT [  ]
-CMD ["python", "run_all.py
+CMD ["python", "run_all.py", "-d", "true"]
