@@ -11,9 +11,9 @@ import sys
 
 engine = get_engine(fname='../credentials/.server_analytics')
 driver = get_webdriver()
-    
+
 from_zone = tz.tzutc()
-to_zone = tz.gettz("Europe/Moscow")    
+to_zone = tz.gettz("Europe/Moscow")
 
 
 brand = 'Дикарт'
@@ -23,7 +23,7 @@ def get_groups():
     driver.get('https://dikart.ru/catalog/')
     sections = driver.find_element(By.CLASS_NAME, 'content ')
     found = sections.find_elements(By.TAG_NAME, "li")
-    
+
     groups = {}
 
     for group in found:
@@ -35,12 +35,12 @@ def get_groups():
                 print(f'{name}: {link}')
         except NoSuchElementException as e:
             pass
-        
+
     return groups
 
 
 def get_group(group: str, group_url: str) -> pd.DataFrame:
-    
+
     found_items = pd.DataFrame(columns=[
         'brand',
         'timestamp',
@@ -54,24 +54,24 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
         'specs',
         'url'
     ])
-    
+
     driver.get(group_url)
 
-    timestamp = dt.utcnow().replace(tzinfo = from_zone).astimezone(to_zone)
+    timestamp = dt.utcnow().replace(tzinfo=from_zone).astimezone(to_zone)
     timestamp = timestamp.strftime('%d.%m.%y %H:%M:%S')
-    
+
     items = driver.find_elements(By.CLASS_NAME, 'product-item')
 
     for item in items:
         name = params = material = id = specs = url = None
         list_price = sale_price = discount = 0
         new = 0
-        
+
         name = item.find_element(By.CLASS_NAME, 'title').text
         specs = item.find_element(By.CLASS_NAME, 'output_size').text
         list_price = item.find_element(By.CLASS_NAME, 'price').text
         url = item.find_element(By.TAG_NAME, 'a').get_attribute('href')
-            
+
         print(f'{name=}, {id=}, {material=}, {specs=}, {list_price=}, {url=}')
         new_record = pd.Series({
             'brand': brand,
@@ -88,31 +88,29 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
         })
 
         found_items.loc[len(found_items)] = new_record
-            
+
     print(f'\nGot {len(found_items)} items from {group}')
     print(f'{timestamp}')
-    
+
     return found_items
 
 
 def clean_data(df):
-    
+
     def get_list_price(s) -> float:
         if s.lower().startswith('от'):
             return None
-        
+
         price = re.match(r'\b(\d+)\sруб\.', s)
         if price:
             return int(price.groups()[0])
-        
-        return None 
 
+        return None
 
     df.list_price = df.list_price.apply(get_list_price)
-    
-    
+
     return df
-    
+
 
 def parse_dikart(dev=True):
     print('Starting v.0.2')
@@ -122,29 +120,29 @@ def parse_dikart(dev=True):
         table = 'parsed_dev'
     else:
         table = 'parsed'
-            
+
     print(f'Getting groups from {brand}')
     send_mail(
-        recipient='kan@dikart.ru', 
-        subject=f'Starting parsing {brand}', 
-        message=''
-        )
-    
+        recipient='kan@dikart.ru',
+        subject=f'Starting parsing {brand}',
+        message=f'{table=}'
+    )
+
     groups = get_groups()
     for group, url in groups.items():
         print(f'{group}: {url}')
-        
+
     import random
     groups_list = list(groups.items())
     random.shuffle(groups_list)
     groups = {k: v for k, v in groups_list}
-    
+
     log = {}
 
     for group, group_url in groups.items():
         # DEBUG
         # if group != 'Плинтусы' : continue
-        
+
         print('\n', '>'*20, 'Getting', group, '<'*20)
         found = None
         i = 0
@@ -153,8 +151,8 @@ def parse_dikart(dev=True):
                 found = get_group(group, group_url)
             except:
                 i += 1
-        
-        if len(found) > 0: 
+
+        if len(found) > 0:
             found = clean_data(found)
 
             print(f'\n=>  {engine=}')
@@ -170,11 +168,11 @@ def parse_dikart(dev=True):
                     'discount': sqlalchemy.Float,
                     'sale_price': sqlalchemy.Numeric
                 }
-            ) 
-            print(f'{found_to_sql=}')       
-            
+            )
+            print(f'{found_to_sql=}')
+
             log[group] = len(found)
-        
+
     # print result
     msg = f'{table=}\n'
     msg += f'***PARSED {brand}***\n'
@@ -185,18 +183,19 @@ def parse_dikart(dev=True):
         msg += f'{group}: {count}\n'
     print('*' * 40)
     msg += '***END***'
-    
+
     elapsed_time = time.mktime(time.localtime()) - start
     elapsed_str = time.strftime('%H:%M:%S', time.gmtime(elapsed_time))
-    timestamp = time.strftime('%d.%m.%y %H:%M:%S', time.localtime()) 
+    timestamp = time.strftime('%d.%m.%y %H:%M:%S', time.localtime())
     print(f'Completed at {timestamp} in {elapsed_str}')
- 
+
     send_mail(
-        recipient='kan@dikart.ru', 
-        subject=f'Parsed {brand}', 
+        recipient='kan@dikart.ru',
+        subject=f'Parsed {brand}',
         message=msg
     )
-    
+
+
 if __name__ == "__main__":
     dev = parse_args(sys.argv)
     parse_dikart(dev)

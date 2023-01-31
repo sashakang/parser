@@ -149,7 +149,7 @@ def parse_petergof(dev=True):
     send_mail(
         recipient='kan@dikart.ru', 
         subject=f'Starting parsing {brand}', 
-        message=''
+        message=f'{table=}'
         )
     
     groups = get_groups()
