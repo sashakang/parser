@@ -1,13 +1,14 @@
+import sys
+import random
+import re
+import time
+from datetime import datetime as dt
+from dateutil import tz
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 import pandas as pd
-import re
-import time
 import sqlalchemy
 from services import get_engine, send_mail, get_webdriver, parse_args
-from datetime import datetime as dt
-from dateutil import tz
-import sys
 
 engine = get_engine(fname='../credentials/.server_analytics')
 driver = get_webdriver()
@@ -16,7 +17,7 @@ from_zone = tz.tzutc()
 to_zone = tz.gettz("Europe/Moscow")
 
 
-brand = 'Дикарт'
+BRAND = 'Дикарт'
 
 
 def get_groups():
@@ -74,7 +75,7 @@ def get_group(group: str, group_url: str) -> pd.DataFrame:
 
         print(f'{name=}, {id=}, {material=}, {specs=}, {list_price=}, {url=}')
         new_record = pd.Series({
-            'brand': brand,
+            'brand': BRAND,
             'timestamp': timestamp,
             'new': new,
             'cat': group,
@@ -121,10 +122,10 @@ def parse_dikart(dev=True):
     else:
         table = 'parsed'
 
-    print(f'Getting groups from {brand}')
+    print(f'Getting groups from {BRAND}')
     send_mail(
         recipient='kan@dikart.ru',
-        subject=f'Starting parsing {brand}',
+        subject=f'Starting parsing {BRAND}',
         message=f'{table=}'
     )
 
@@ -132,7 +133,6 @@ def parse_dikart(dev=True):
     for group, url in groups.items():
         print(f'{group}: {url}')
 
-    import random
     groups_list = list(groups.items())
     random.shuffle(groups_list)
     groups = {k: v for k, v in groups_list}
@@ -175,8 +175,8 @@ def parse_dikart(dev=True):
 
     # print result
     msg = f'{table=}\n'
-    msg += f'***PARSED {brand}***\n'
-    print('*' * 15, 'PARSED', brand, '*' * 16)
+    msg += f'***PARSED {BRAND}***\n'
+    print('*' * 15, 'PARSED', BRAND, '*' * 16)
     log = {k: log[k] for k in sorted(log)}
     for group, count in log.items():
         print(f'{group}: {count}')
@@ -191,7 +191,7 @@ def parse_dikart(dev=True):
 
     send_mail(
         recipient='kan@dikart.ru',
-        subject=f'Parsed {brand}',
+        subject=f'Parsed {BRAND}',
         message=msg
     )
 
