@@ -21,6 +21,11 @@ To avoid crashing Chrome from within the container increase size of shared memor
 To parse everything just run the image:  
 `docker run -it --shm-size=1g --rm sashakang/parser`
 
+After introducing `--dev` switch seems like just running the image runs it in dev mode.
+This is OK.
+But now to run production parsing use 
+`docker run -it --shm-size=1g --rm sashakang/parser python run_all.py --dev false`
+
 To parse Petergof:  
 `docker run -it --shm-size=1g --rm -v parser-vol:/credentials sashakang/parser python parse_petergof.py`
 
@@ -33,7 +38,9 @@ Switch to root user `sudo su -`.
 Then in terminal browse to `/etc` folder and edit `crontab` file under root user: `nano crontab`.
 
 To run container in cron do not use `-it` option, i.e.  
-`docker run --shm-size=1g --rm parser python parse_petergof.py`
+`docker run --shm-size=1g --rm parser python parse_petergof.py`  
+or  
+`docker run -d --shm-size=1g --rm parser python parse_petergof.py`
 
 To keep credentials use volume mount. Do not use bind mount as its path can be modified and thus the code can get access to any data.
 
