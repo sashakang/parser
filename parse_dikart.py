@@ -30,7 +30,7 @@ def get_groups():
     for group in found:
         try:
             link = group.find_element(By.TAG_NAME, 'a').get_attribute('href')
-            name = group.find_element(By.TAG_NAME, 'span').text
+            name = group.find_element(By.CLASS_NAME, 'name').text
             if len(name) > 0 and len(link) > 0:
                 groups[name] = link
                 print(f'{name}: {link}')
