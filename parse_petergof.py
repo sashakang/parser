@@ -166,6 +166,7 @@ def parse_petergof(dev=True):
 
     for group, url in groups.items():
         # if group != 'Кариатиды': continue
+
         print('\n', '>'*15, 'Getting', group, '<'*15)
 
         found = None
@@ -173,25 +174,26 @@ def parse_petergof(dev=True):
         while found is None and i < 5:
             try:
                 found = get_group(group, url)
+
+                log[group] = len(found)
+
+                print(f'\n=>  {engine=}')
+
+                found.to_sql(
+                    name=table,
+                    con=engine,
+                    if_exists='append',
+                    index=False,
+                    dtype={
+                        'timestamp': sqlalchemy.DateTime,
+                        'list_price': sqlalchemy.Numeric,
+                        'discount': sqlalchemy.Float,
+                        'sale_price': sqlalchemy.Numeric
+                    }
+                )
             except:
                 i += 1
 
-        log[group] = len(found)
-
-        print(f'\n=>  {engine=}')
-
-        found.to_sql(
-            name=table,
-            con=engine,
-            if_exists='append',
-            index=False,
-            dtype={
-                'timestamp': sqlalchemy.DateTime,
-                'list_price': sqlalchemy.Numeric,
-                'discount': sqlalchemy.Float,
-                'sale_price': sqlalchemy.Numeric
-            }
-        )
 
     # print result
     msg = f'{table=}\n'
@@ -201,11 +203,17 @@ def parse_petergof(dev=True):
     for group, count in log.items():
         print(f'{group}: {count}')
         msg += f'{group}: {count}\n'
+    
+    print(f'*** TOTAL PARSED: {sum(log.values())} ***')
+
     print('*' * 40)
     msg += '***END***'
 
-    send_mail(recipient='kan@dikart.ru',
-              subject=f'Parsed {BRAND}', message=msg)
+    send_mail(
+        recipient='kan@dikart.ru',
+        subject=f'Parsed {BRAND} {str(sum(log.values())) + " items"}',
+        message=msg
+        )
 
     elapsed_time = time.mktime(time.localtime()) - start
     elapsed_str = time.strftime('%H:%M:%S', time.gmtime(elapsed_time))
@@ -215,4 +223,4 @@ def parse_petergof(dev=True):
 
 if __name__ == '__main__':
     dev = parse_args(sys.argv)
-    parse_petergof(dev)
+    parse_petergof(de

@@ -191,7 +191,7 @@ def parse_dikart(dev=True):
 
     send_mail(
         recipient='kan@dikart.ru',
-        subject=f'Parsed {BRAND}',
+        subject=f'Parsed {BRAND} {str(sum(log.values())) + " items"}',
         message=msg
     )
 
