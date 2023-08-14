@@ -308,8 +308,11 @@ def parse_artpole(dev=True):
         msg += f'{group}: {count}\n'
     print('*' * 40)
     msg += '***END***'
-    send_mail(recipient='kan@dikart.ru',
-              subject=f'Parsed {BRAND}', message=msg)
+    send_mail(
+        recipient='kan@dikart.ru',
+        subject=f'Parsed {BRAND} {str(sum(log.values())) + " items"}', 
+        message=msg
+        )
 
     elapsed_time = time.mktime(time.localtime()) - start
     elapsed_str = time.strftime('%H:%M:%S', time.gmtime(elapsed_time))
