@@ -223,4 +223,5 @@ def parse_petergof(dev=True):
 
 if __name__ == '__main__':
     dev = parse_args(sys.argv)
-    parse_petergof(de
+    parse_petergof(dev)
+    
