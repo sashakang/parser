@@ -73,3 +73,6 @@ provided `.server_analytics` file located in the root o
 
 `docker exec -it [container ID] bash`
 
+# Push
+
+`docker push sashakang/parser`
